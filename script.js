@@ -618,11 +618,11 @@ function updateUI() {
     if (state.familiar && PERSONAS[state.familiar]) {
       const p = PERSONAS[state.familiar];
       const map = FAMILIAR_BONUS_MAP[state.familiar] || {};
-      dashFam.innerHTML = `현재 정령: <strong>${p.name}</strong> — LIVE ${Object.keys(map).length ? 'BONUS 적용' : ''}<br><small>${p.desc.substring(0,58)}...</small>`;
+      dashFam.innerHTML = `현재 정령: <strong>${p.name}</strong>${Object.keys(map).length ? ' — 보너스 적용 중' : ''}<br><small>${p.desc.substring(0,58)}...</small>`;
       dashFam.onclick = () => showTab('familiars');
       dashFam.style.cursor = 'pointer';
     } else {
-      dashFam.innerHTML = '소환된 정령 없음. "소환" 탭에서 선택. p3 funnel 지원.';
+      dashFam.innerHTML = '소환된 정령이 없습니다. "소환" 탭에서 정령을 선택하세요.';
       dashFam.onclick = () => showTab('familiars');
       dashFam.style.cursor = 'pointer';
     }
