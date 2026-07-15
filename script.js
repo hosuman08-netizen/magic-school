@@ -64,14 +64,11 @@ function renderStreakFomoP5() {
   const el = document.getElementById('streak-fomo-text');
   if (el) {
     const nextMilestone = Math.ceil((s.days + 1) / 3) * 3;
-    const prog = Math.min(100, Math.floor(((s.days % 3) / 3) * 100));
-    el.innerHTML = `${s.days}일 연속 • 오늘 ${s.count}수업 <span style="color:#facc15">(variable FOMO)</span><br><small>다음 ${nextMilestone}일까지 ${prog}% (streak scarcity)</small>`;
+    const remain = Math.max(0, nextMilestone - s.days);
+    el.textContent = `다음 보상 ${remain}일`;
   }
   const stat = document.getElementById('streak');
   if (stat) stat.textContent = s.days + '일';
-  // also sync dashboard streak fomo container if present
-  const df = document.getElementById('streak-fomo-ui');
-  if (df) df.style.borderLeft = (s.days > 4 ? '3px solid #facc15' : '3px solid #a78bfa');
 }
 
 const SPELLS = {
@@ -700,6 +697,9 @@ let currentLesson = null;
 
 function startLesson(type) {
   currentLesson = type;
+  // Casting UI lives inside the #lessons tab — make sure it's the visible tab,
+  // otherwise dashboard lesson cards would silently do nothing.
+  showTab('lessons');
   const area = document.getElementById('casting-area');
   const title = document.getElementById('lesson-title');
   const game = document.getElementById('cast-game');

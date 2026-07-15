@@ -20,14 +20,34 @@
         <button onclick="showTab('study')">공부 모드 (Learning)</button>
         <button onclick="showTab('familiars')">소환 (Familiars)</button>
       </div>
-      <!-- Prominent fictional shield (top, always visible) -->
-      <div class="fictional-shield" style="font-size:0.68em;background:#2a1f14;color:#c8a26b;padding:3px 8px;border-radius:4px;margin:6px 0;border-left:3px solid #facc15;">
-        FICTIONAL 18+ SIMULATION ONLY. All magic & personas virtual. No real spells. Prominent disclosure: entertainment + Legion training. Cross p3/p5 synergy.
+      <!-- Prominent fictional shield (top, always visible; honest + not visually shouting) -->
+      <div class="fictional-shield">
+        FICTIONAL 18+ SIMULATION — 가상의 마법 교육. 실제 마법·주문·정령 없음. Entertainment only.
       </div>
     </header>
 
     <!-- Dashboard -->
     <div id="dashboard" class="tab">
+      <!-- HERO: today's lesson is the one thing the eye lands on -->
+      <div class="today">
+        <div class="today-head">오늘의 수업</div>
+        <button class="lesson-card hero-lesson" onclick="startLesson('elemental')">
+          <span class="lesson-name">원소 조율</span>
+          <span class="lesson-sub">타이밍 홀드 · 불과 물의 균형</span>
+        </button>
+        <div class="lesson-row">
+          <button class="lesson-card" onclick="startLesson('illusion')">
+            <span class="lesson-name">환영의 베일</span>
+            <span class="lesson-sub">기억 시퀀스</span>
+          </button>
+          <button class="lesson-card" onclick="startLesson('echo')">
+            <span class="lesson-name">에코 마법</span>
+            <span class="lesson-sub">잔향 재현</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats: quiet supporting row (secondary), streak carries the single gold accent -->
       <div class="stats">
         <div class="stat">
           <div class="label">마력</div>
@@ -37,47 +57,27 @@
           <div class="label">지식</div>
           <div class="value" id="knowledge">28</div>
         </div>
-        <div class="stat">
+        <div class="stat stat-streak">
           <div class="label">연속 출석</div>
           <div class="value" id="streak">7일</div>
-        </div>
-        <div class="stat" id="breath-fuel-stat" style="border-left:2px solid #c5a46e">
-          <div class="label">호흡 연료 (p6)</div>
-          <div class="value" id="breath-fuel">0.7</div>
-          <small id="lung-surprise">surprise 0.12</small>
+          <small id="streak-fomo-text"></small>
         </div>
       </div>
 
-      <div class="today">
-        <h3>오늘의 수업</h3>
-        <div class="lesson-card" onclick="startLesson('elemental')">
-          <strong>원소 조율</strong><br>
-          <small>타이밍 홀드 • 불과 물의 균형</small>
-        </div>
-        <div class="lesson-card" onclick="startLesson('illusion')">
-          <strong>환영의 베일</strong><br>
-          <small>메모리 시퀀스 • 거짓과 진실</small>
-        </div>
-        <div class="lesson-card" onclick="startLesson('echo')">
-          <strong>에코 마법</strong><br>
-          <small>잔향 기억 (show-hide recall)</small>
-        </div>
-        <div class="lesson-card" onclick="startLesson('reaction')">
-          <strong>반응 주문 ★</strong><br>
-          <small>초압박 choice-reaction FOMO</small>
-        </div>
-      </div>
+      <div id="dashboard-familiar" class="soft-card"></div>
 
       <div class="fomo">
-        <strong>🌙 월식 이벤트 진행 중</strong><br>
-        <small>희귀 주문 "그림자 소환" 18시간 남음 • FOMO scarcity + variable</small>
+        <strong>월식 이벤트 진행 중</strong><br>
+        <small>희귀 주문 "그림자 소환" — 18시간 남음</small>
       </div>
 
-      <div id="streak-fomo-ui" style="background:#3a2a1a;padding:9px 10px;border-radius:6px;margin:8px 0;font-size:0.83em;border-left:3px solid #facc15;line-height:1.35">
-        🔥 Streak FOMO: <span id="streak-fomo-text">7일 • 오늘 0수업 (variable ratio + scarcity)</span>
-      </div>
-
-      <div id="dashboard-familiar" style="margin-top:12px; padding:8px; background:#1f1a33; border-radius:6px; font-size:0.84em;"></div>
+      <details class="cross-note">
+        <summary>p6 연동 상태</summary>
+        <div class="cross-body">
+          호흡 연료 <b id="breath-fuel">0.7</b> · <span id="lung-surprise">surprise 0.12</span>
+          <small>p6 Aether Eye에서 호흡·서프라이즈가 캐스팅 위력에 실시간 반영됩니다.</small>
+        </div>
+      </details>
     </div>
 
     <!-- Lessons -->

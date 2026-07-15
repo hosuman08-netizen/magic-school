@@ -48,38 +48,90 @@ header h1 {
 
 .hidden { display: none; }
 
+/* ── Stats: quiet secondary row (values are neutral, not gold) ── */
 .stats {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin: 16px 0;
 }
 
 .stat {
   flex: 1;
-  background: #1f1a33;
-  padding: 12px;
+  background: #1a1630;
+  padding: 12px 8px;
   border-radius: 8px;
   text-align: center;
 }
 
+.stat .label {
+  font-size: 0.72rem;
+  color: #9a92b8;
+  letter-spacing: .2px;
+}
+
 .stat .value {
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: var(--gold);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #e2d9ff;   /* neutral — gold is reserved for the one streak accent */
+  margin-top: 2px;
+}
+
+/* the single gold accent on the whole dashboard */
+.stat-streak .value { color: var(--gold); }
+.stat-streak small {
+  display: block;
+  font-size: 0.62rem;
+  color: #9a7b2e;
+  margin-top: 2px;
+}
+
+/* ── Today: the hero block ── */
+.today { margin: 8px 0 16px; }
+.today-head {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #9a92b8;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
 
 .lesson-card, .lesson-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   background: #1f1a33;
-  border: 1px solid #4c3f72;
-  padding: 11px 13px;
-  margin: 7px 0;
-  border-radius: 8px;
+  border: 1px solid #322b4d;
+  padding: 16px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: border .1s;
+  text-align: left;
+  color: #ddd;
+  font-family: inherit;
+  transition: transform .16s ease-out, border-color .16s ease-out, background .16s ease-out;
 }
+.lesson-card:hover, .lesson-btn:hover { border-color: #6b5ca0; }
+.lesson-card:active { transform: scale(0.98); }
 
-.lesson-card:hover, .lesson-btn:hover {
-  border-color: #a78bfa;
+.lesson-name { font-size: 1rem; font-weight: 600; color: #e2d9ff; }
+.lesson-sub  { font-size: 0.78rem; color: #948cb4; }
+
+/* HERO lesson — the one thing the eye lands on first (60/30/10: accent as 10%) */
+.hero-lesson {
+  width: 100%;
+  padding: 22px 20px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #2a2450, #1c1838);
+  border: 1px solid #4c3f72;
+}
+.hero-lesson:hover { border-color: var(--accent); }
+.hero-lesson .lesson-name { font-size: 1.3rem; color: #fff; }
+.hero-lesson .lesson-sub  { font-size: 0.85rem; color: #b6ade0; }
+
+.lesson-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .lesson-btn {
@@ -131,13 +183,50 @@ header h1 {
   font-size: 0.9rem;
 }
 
+/* FOMO: present but subordinate to the hero (no gold — muted amber only) */
 .fomo {
-  background: #3a2a1a;
-  padding: 10px;
-  border-radius: 6px;
+  background: #221a12;
+  color: #b89a6a;
+  padding: 12px 14px;
+  border-radius: 8px;
   margin: 16px 0;
-  border-left: 4px solid #facc15;
+  border-left: 3px solid #6b5327;
+  font-size: 0.85rem;
 }
+.fomo strong { color: #cfa96b; font-weight: 600; }
+
+.soft-card {
+  background: #1a1630;
+  border: 1px solid #2a2444;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 16px 0;
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+
+/* p6 cross-project detail — collapsed by default so it never fights the product */
+.cross-note {
+  margin: 16px 0 8px;
+  font-size: 0.78rem;
+}
+.cross-note summary {
+  cursor: pointer;
+  color: #7a729a;
+  padding: 8px 0;
+  list-style: none;
+}
+.cross-note summary::before { content: "▸ "; }
+.cross-note[open] summary::before { content: "▾ "; }
+.cross-note .cross-body {
+  padding: 8px 12px;
+  background: #15121f;
+  border-radius: 8px;
+  color: #948cb4;
+  line-height: 1.5;
+}
+.cross-note .cross-body small { display: block; margin-top: 6px; opacity: .8; }
+.cross-note b { color: #c5a46e; }
 
 .fictional-shield {
   background: #2a1f14;
