@@ -31,14 +31,14 @@
       <!-- HERO: today's lesson is the one thing the eye lands on -->
       <div class="today">
         <div class="today-head">오늘의 수업</div>
-        <button class="lesson-card hero-lesson" onclick="startLesson('elemental')">
-          <span class="lesson-name">원소 조율</span>
-          <span class="lesson-sub">타이밍 홀드 · 불과 물의 균형</span>
+        <button class="lesson-card hero-lesson" id="arcana-hero" onclick="startArcanaLesson()">
+          <span class="lesson-name">아르카나 지식 복습</span>
+          <span class="lesson-sub" id="arcana-hero-sub">간격반복으로 오늘 잊기 직전의 지식을 되살린다</span>
         </button>
         <div class="lesson-row">
-          <button class="lesson-card" onclick="startLesson('illusion')">
-            <span class="lesson-name">환영의 베일</span>
-            <span class="lesson-sub">기억 시퀀스</span>
+          <button class="lesson-card" onclick="startLesson('elemental')">
+            <span class="lesson-name">원소 조율</span>
+            <span class="lesson-sub">타이밍 홀드</span>
           </button>
           <button class="lesson-card" onclick="startLesson('echo')">
             <span class="lesson-name">에코 마법</span>
@@ -84,6 +84,7 @@
     <div id="lessons" class="tab hidden">
       <h2>수업 선택</h2>
       <div class="lesson-list">
+        <button class="lesson-btn" onclick="startArcanaLesson()" style="border-color:#a78bfa;background:#221c3a">📖 아르카나 지식 복습 (진짜 배움 · 간격반복)</button>
         <button class="lesson-btn" onclick="startLesson('elemental')">원소 조율 (타이밍)</button>
         <button class="lesson-btn" onclick="startLesson('illusion')">환영의 베일 (메모리)</button>
         <button class="lesson-btn" onclick="startLesson('binding')">구속의 주문 (축적)</button>

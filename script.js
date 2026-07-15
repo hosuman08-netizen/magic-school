@@ -81,6 +81,301 @@ const SPELLS = {
   reaction: { name: "반응 주문", desc: "choice-reaction — 순간의 흐름을 포착 (FOMO 압박)." }
 };
 
+// =====================================================================
+// REAL LEARNING CORE — 아르카나 지식 덱 (진짜 배움)
+// 마법 학원의 껍질 안에 실제로 학습 가능한 지식을 담는다.
+// 각 카드: 진짜 사실 + 진짜 정답 + 진짜 해설(왜 그런지). placeholder 아님.
+// 출처 계열: 어원학(그리스/라틴), 천문학, 신화, 광물/원소. 전부 검증 가능한 실사실.
+// =====================================================================
+const ARCANA = [
+  // --- 어원 계열: "룬(어근)의 진짜 의미" ---
+  { id:'et_astro', school:'룬어원', front:'룬 "astro-"는 무엇의 진짜 뜻인가?',
+    choices:['별(star)','불(fire)','물(water)','땅(earth)'], answer:0,
+    lore:'천문(astronomy)·점성(astrology)의 뿌리.',
+    fact:'그리스어 astḗr = "별". astronomy = astron(별)+nomos(법칙) = 별의 법칙. asterisk(*)도 "작은 별"이라는 뜻.' },
+  { id:'et_hydro', school:'룬어원', front:'룬 "hydro-"의 진짜 뜻은?',
+    choices:['불','물(water)','공기','빛'], answer:1,
+    lore:'수원(水) 계열 주문의 어근.',
+    fact:'그리스어 hydōr = "물". hydrant(소화전), dehydrate(탈수), hydrogen = "물을 만드는 것"(연소 시 물 생성).' },
+  { id:'et_pyro', school:'룬어원', front:'룬 "pyro-"의 진짜 뜻은?',
+    choices:['불(fire)','얼음','바람','금속'], answer:0,
+    lore:'화염(火) 계열 주문의 어근.',
+    fact:'그리스어 pŷr = "불". pyromania(방화벽), pyre(장작더미), pyrotechnics(불꽃놀이 기술).' },
+  { id:'et_geo', school:'룬어원', front:'룬 "geo-"의 진짜 뜻은?',
+    choices:['하늘','바다','땅(earth)','시간'], answer:2,
+    lore:'대지(地) 계열 주문의 어근.',
+    fact:'그리스어 gê = "땅/지구". geography = 땅을 그림, geology = 땅의 학문, geometry = 땅을 재다(측량에서 유래).' },
+  { id:'et_chrono', school:'룬어원', front:'룬 "chrono-"의 진짜 뜻은?',
+    choices:['공간','시간(time)','기억','운명'], answer:1,
+    lore:'시간 조작 계열의 어근.',
+    fact:'그리스어 khrónos = "시간". chronometer(정밀시계), chronological(시간 순), anachronism = 시대착오.' },
+  { id:'et_photo', school:'룬어원', front:'룬 "photo-"의 진짜 뜻은?',
+    choices:['소리','빛(light)','그림자','열'], answer:1,
+    lore:'광휘(光) 계열 주문의 어근.',
+    fact:'그리스어 phôs/phōtós = "빛". photograph = 빛으로 그리다, photon(광자), photosynthesis = 빛으로 합성.' },
+  // --- 천문 계열: "천체의 진실" ---
+  { id:'as_sun', school:'천문', front:'태양은 무엇으로 빛나는가?',
+    choices:['불타는 석탄','수소 핵융합','전기 방전','마찰열'], answer:1,
+    lore:'모든 화염 주문의 근원별.',
+    fact:'태양은 중심부에서 수소를 헬륨으로 융합(핵융합)하며 빛과 열을 낸다. 매초 약 6억 톤 수소가 융합된다.' },
+  { id:'as_light', school:'천문', front:'태양빛이 지구에 닿는 데 걸리는 시간은?',
+    choices:['즉시','약 8분','약 1시간','하루'], answer:1,
+    lore:'빛의 잔향(에코)이 우주를 건너는 시간.',
+    fact:'빛 속도는 초속 30만 km. 태양~지구 약 1억5천만 km를 약 8분 20초에 건넌다. 즉 지금 보는 태양은 8분 전의 모습.' },
+  { id:'as_moon', school:'천문', front:'달이 항상 같은 면만 보이는 이유는?',
+    choices:['자전을 안 해서','조석 고정(동주기 자전)','지구가 가려서','너무 멀어서'], answer:1,
+    lore:'월식 이벤트의 진짜 원리.',
+    fact:'달의 자전 주기와 공전 주기가 같아(조석 고정) 한 면만 지구를 향한다. 뒷면은 지구에서 결코 보이지 않는다.' },
+  { id:'as_star', school:'천문', front:'밤하늘 별빛은 사실 무엇인가?',
+    choices:['현재의 빛','과거의 빛','미래의 빛','반사광'], answer:1,
+    lore:'에코 마법의 우주적 증거.',
+    fact:'별은 수 광년~수천 광년 떨어져 있어, 그 빛은 수년~수천년 전에 출발한 것. 별을 본다는 건 과거를 보는 것과 같다.' },
+  // --- 신화 계열: "정령의 기원" ---
+  { id:'my_phoenix', school:'신화', front:'불사조(Phoenix) 신화의 핵심 상징은?',
+    choices:['영원한 젊음','죽음과 재생','무한한 부','예언'], answer:1,
+    lore:'화염 정령의 기원 설화.',
+    fact:'불사조는 자신의 재 속에서 다시 태어난다. 그리스·이집트 신화에서 죽음→재생의 순환을 상징한다.' },
+  { id:'my_prometheus', school:'신화', front:'프로메테우스가 인류에게 준 것은?',
+    choices:['물','불(과 지혜)','금','시간'], answer:1,
+    lore:'스파크 점화 주문의 신화적 뿌리.',
+    fact:'프로메테우스는 신들에게서 불을 훔쳐 인류에게 주고, 그 벌로 매일 간을 쪼이는 형벌을 받았다. 불=문명·지식의 상징.' },
+  { id:'my_echo', school:'신화', front:'그리스 신화에서 "에코(Echo)"는 원래 누구인가?',
+    choices:['바다의 신','목소리를 잃은 님프','불의 여신','달의 여신'], answer:1,
+    lore:'에코 마법의 이름이 유래한 곳.',
+    fact:'에코는 헤라의 저주로 남의 말 끝만 반복하게 된 님프. 나르키소스를 짝사랑하다 몸이 스러지고 목소리(메아리)만 남았다.' },
+  // --- 광물/원소 계열: "물질의 진실" ---
+  { id:'mn_diamond', school:'물질', front:'다이아몬드는 무엇으로 이루어졌나?',
+    choices:['규소','순수한 탄소','철','석영'], answer:1,
+    lore:'가장 단단한 마법 결정의 정체.',
+    fact:'다이아몬드는 탄소 원자가 정사면체로 강하게 결합한 것. 흑연(연필심)과 성분은 같지만 결합 구조가 달라 성질이 정반대.' },
+  { id:'mn_gold', school:'물질', front:'금(Au)이 잘 변하지 않는(녹슬지 않는) 이유는?',
+    choices:['매우 무거워서','화학적으로 안정(비활성)해서','빛나서','희귀해서'], answer:1,
+    lore:'변치 않는 마력의 상징.',
+    fact:'금은 반응성이 매우 낮아 산소·물과 거의 반응하지 않는다. 그래서 수천 년 된 금 유물도 광택을 유지한다.' },
+  { id:'mn_water', school:'물질', front:'물(H₂O) 한 분자는 무엇으로 되어 있나?',
+    choices:['수소2+산소1','수소1+산소2','수소1+산소1','산소3'], answer:0,
+    lore:'수원 주문의 기본 구성식.',
+    fact:'물은 수소 원자 2개와 산소 원자 1개의 결합(H₂O). 굽은 구조 때문에 극성을 띠어 "만능 용매"가 된다.' }
+];
+
+// SM-2 spaced-repetition 상태: cardId -> {ease, interval, reps, due, lapses, mastered}
+function getArcanaProgress() {
+  try { return JSON.parse(localStorage.getItem('p5-arcana-srs') || '{}'); }
+  catch { return {}; }
+}
+function saveArcanaProgress(p) {
+  try { localStorage.setItem('p5-arcana-srs', JSON.stringify(p)); } catch(e){}
+}
+function todayNum() { return Math.floor(Date.now() / 86400000); } // days since epoch
+
+// SM-2 알고리즘 (SuperMemo-2, 실제 간격반복 공식)
+// grade 0-2 = 실패(리셋), 3-5 = 성공(간격 증가)
+function scheduleCard(card, grade) {
+  let ease = card.ease ?? 2.5;
+  let interval = card.interval ?? 0;
+  let reps = card.reps ?? 0;
+  let lapses = card.lapses ?? 0;
+
+  if (grade < 3) {
+    // 실패: 반복 리셋, 내일 다시
+    reps = 0;
+    interval = 1;
+    lapses += 1;
+  } else {
+    reps += 1;
+    if (reps === 1) interval = 1;
+    else if (reps === 2) interval = 6;
+    else interval = Math.round(interval * ease);
+    // ease 조정 (SM-2 공식)
+    ease = ease + (0.1 - (5 - grade) * (0.08 + (5 - grade) * 0.02));
+    if (ease < 1.3) ease = 1.3;
+  }
+  const mastered = reps >= 3 && interval >= 21; // 21일 이상 유지 = 장기기억 정착
+  return { ease, interval, reps, lapses, due: todayNum() + interval, mastered, last: todayNum() };
+}
+
+// 오늘 복습할 카드: due <= 오늘 이거나 아직 안 배운 카드
+function getDueCards() {
+  const prog = getArcanaProgress();
+  const t = todayNum();
+  const due = [];
+  const fresh = [];
+  ARCANA.forEach(c => {
+    const p = prog[c.id];
+    if (!p) fresh.push(c);
+    else if ((p.due ?? 0) <= t) due.push({ card: c, prog: p });
+  });
+  // 복습 우선, 그다음 새 카드 (하루 새 카드 과부하 방지: 최대 4장)
+  return { due, fresh: fresh.slice(0, 4), freshTotal: fresh.length };
+}
+
+function getMasteryStats() {
+  const prog = getArcanaProgress();
+  let mastered = 0, learning = 0;
+  ARCANA.forEach(c => {
+    const p = prog[c.id];
+    if (!p) return;
+    if (p.mastered) mastered++;
+    else if ((p.reps ?? 0) > 0) learning++;
+  });
+  return { mastered, learning, total: ARCANA.length };
+}
+
+// 현재 진행 중인 지식 수업 세션
+let arcanaSession = null;
+
+// 지식 수업 시작 — 오늘 복습 대상 + 새 카드로 큐 구성
+function startArcanaLesson() {
+  showTab('lessons');
+  const area = document.getElementById('casting-area');
+  const title = document.getElementById('lesson-title');
+  const game = document.getElementById('cast-game');
+  const sfumato = document.getElementById('cast-sfumato');
+  if (sfumato) sfumato.style.display = 'none'; // 지식 수업은 텍스트 집중
+
+  const { due, fresh, freshTotal } = getDueCards();
+  const queue = [
+    ...due.map(d => d.card),
+    ...fresh
+  ];
+
+  if (queue.length === 0) {
+    title.textContent = '아르카나 지식 — 오늘 복습 완료';
+    game.innerHTML = `<div style="padding:12px;line-height:1.6">
+      <div style="font-size:1.05em;color:#a78bfa">오늘 복습할 지식이 모두 정착됐습니다. 🌙</div>
+      <div style="opacity:.8;margin-top:6px">간격반복(SM-2)이 다음 복습일을 자동 예약했습니다. 내일 다시 오면 기억이 흐려질 때쯤의 카드가 떠오릅니다.</div>
+      <div style="margin-top:8px;font-size:.85em;opacity:.7">이것이 진짜 학습의 원리 — 잊기 직전에 다시 만나 장기기억으로 굳힙니다.</div>
+    </div>`;
+    area.classList.remove('hidden');
+    return;
+  }
+
+  arcanaSession = { queue, idx: 0, correct: 0, total: queue.length, gainedKnowledge: 0, newMastered: 0 };
+  area.classList.remove('hidden');
+  renderArcanaCard();
+}
+
+function renderArcanaCard() {
+  const title = document.getElementById('lesson-title');
+  const game = document.getElementById('cast-game');
+  const s = arcanaSession;
+  if (!s || s.idx >= s.queue.length) { finishArcanaSession(); return; }
+
+  const card = s.queue[s.idx];
+  const prog = getArcanaProgress()[card.id];
+  const status = !prog ? '새 지식' : (prog.mastered ? '정착됨(복습)' : `복습 ${prog.reps || 0}회`);
+
+  title.textContent = `아르카나 지식 — ${card.school}`;
+  // 진행 막대 + 카드 문제 + 선택지
+  let html = `<div style="font-size:.78em;opacity:.7;margin-bottom:6px">${s.idx + 1} / ${s.total} · ${status}</div>`;
+  html += `<div style="font-size:.72em;opacity:.55;margin-bottom:4px">${card.lore}</div>`;
+  html += `<div style="font-size:1.12em;font-weight:600;margin:10px 0 14px;line-height:1.4">${card.front}</div>`;
+  html += `<div id="arcana-choices" style="display:flex;flex-direction:column;gap:8px">`;
+  // 선택지 섞기 (정답 위치 고정 방지) — 매핑 보존
+  const order = card.choices.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  order.forEach(origIdx => {
+    html += `<button class="arcana-choice" data-idx="${origIdx}" style="text-align:left;padding:11px 13px;background:#1f1a33;border:1px solid #4c3f72;border-radius:8px;color:#e5e0f0;cursor:pointer;font-size:.98em">${card.choices[origIdx]}</button>`;
+  });
+  html += `</div>`;
+  game.innerHTML = html;
+
+  document.querySelectorAll('.arcana-choice').forEach(btn => {
+    btn.onclick = () => answerArcanaCard(parseInt(btn.dataset.idx, 10), btn);
+  });
+}
+
+function answerArcanaCard(chosenIdx, btnEl) {
+  const s = arcanaSession;
+  const card = s.queue[s.idx];
+  const correct = chosenIdx === card.answer;
+
+  // 버튼 잠금 + 정답/오답 색
+  document.querySelectorAll('.arcana-choice').forEach(b => {
+    b.onclick = null;
+    b.disabled = true;
+    const bi = parseInt(b.dataset.idx, 10);
+    if (bi === card.answer) b.style.borderColor = '#4ade80', b.style.background = '#16281c';
+    else if (b === btnEl) b.style.borderColor = '#f87171', b.style.background = '#2a1618';
+    else b.style.opacity = '0.5';
+  });
+
+  // SM-2 채점: 정답=4(무리없이 회상), 오답=1(실패)
+  const grade = correct ? 4 : 1;
+  const progAll = getArcanaProgress();
+  const prev = progAll[card.id] || {};
+  const wasMastered = !!prev.mastered;
+  const updated = scheduleCard(prev, grade);
+  progAll[card.id] = { ...updated };
+  saveArcanaProgress(progAll);
+
+  if (correct) {
+    s.correct++;
+    if (updated.mastered && !wasMastered) s.newMastered++;
+  }
+
+  // 진짜 해설 표시 (왜 그런지 = 진짜 배움의 핵심)
+  const game = document.getElementById('cast-game');
+  const nextDays = updated.interval;
+  const explain = document.createElement('div');
+  explain.style.cssText = 'margin-top:14px;padding:12px;background:#15130f;border-left:3px solid ' + (correct ? '#4ade80' : '#f87171') + ';border-radius:6px;line-height:1.55';
+  explain.innerHTML =
+    `<div style="font-weight:600;color:${correct ? '#4ade80' : '#f87171'};margin-bottom:5px">${correct ? '✓ 정답' : '✗ 다시 만나자'}</div>` +
+    `<div style="font-size:.94em">${card.fact}</div>` +
+    `<div style="font-size:.76em;opacity:.65;margin-top:7px">🔁 다음 복습: ${nextDays}일 후${updated.mastered ? ' · 장기기억 정착 ✦' : ''}</div>`;
+  game.appendChild(explain);
+
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = s.idx + 1 >= s.total ? '수업 마치기' : '다음 지식 →';
+  nextBtn.style.cssText = 'margin-top:12px;width:100%';
+  nextBtn.onclick = () => { s.idx++; renderArcanaCard(); };
+  game.appendChild(nextBtn);
+}
+
+function finishArcanaSession() {
+  const s = arcanaSession;
+  const game = document.getElementById('cast-game');
+  const title = document.getElementById('lesson-title');
+  if (!s) return;
+
+  // 진짜 보상: 정답 수 = 지식 획득, 정착 카드 = 큰 보상. 진짜 학습에 연동.
+  const knowledgeGain = s.correct * 3 + s.newMastered * 6;
+  const powerGain = s.correct * 2 + s.newMastered * 4;
+  state.knowledge = (state.knowledge || 0) + knowledgeGain;
+  state.magicPower = (state.magicPower || 0) + powerGain;
+
+  // 학습 세션도 스트릭 갱신 (진짜 출석 = 진짜 복습)
+  updateStreakOnLesson();
+
+  // 이벤트 로그 (진짜 데이터)
+  if (!state.events) state.events = [];
+  state.events.push({ t: Date.now(), type: 'arcana', correct: s.correct, total: s.total, mastered: s.newMastered });
+
+  // insight 자동 기록 — 이번엔 진짜 배운 내용 기반
+  if (!state.insights) state.insights = [];
+  const learned = s.queue.slice(0, Math.min(s.queue.length, 2)).map(c => c.school).filter((v, i, a) => a.indexOf(v) === i).join(', ');
+  state.insights.push({
+    date: new Date().toLocaleDateString('ko-KR'),
+    text: `아르카나 복습: ${learned} 계열 ${s.total}장 중 ${s.correct}장 회상 성공.${s.newMastered ? ` ${s.newMastered}장 장기기억 정착.` : ''}`,
+    lesson: 'arcana', auto: true
+  });
+
+  const stats = getMasteryStats();
+  const acc = s.total ? Math.round(s.correct / s.total * 100) : 0;
+  title.textContent = '아르카나 수업 완료';
+  game.innerHTML =
+    `<div style="padding:8px 4px;line-height:1.6">
+      <div style="font-size:1.15em;color:#a78bfa;font-weight:600">회상 정확도 ${acc}% (${s.correct}/${s.total})</div>
+      <div style="margin-top:8px">지식 +${knowledgeGain} · 마력 +${powerGain}${s.newMastered ? ` · ✦ ${s.newMastered}장 장기기억 정착` : ''}</div>
+      <div style="margin-top:10px;padding:10px;background:#1a1630;border-radius:6px;font-size:.9em">
+        전체 진척: <b style="color:#4ade80">${stats.mastered}</b> 정착 · <b style="color:#facc15">${stats.learning}</b> 학습중 · 총 ${stats.total}장
+      </div>
+      <div style="font-size:.8em;opacity:.7;margin-top:8px">간격반복(SM-2)이 각 카드의 다음 복습일을 기억의 망각곡선에 맞춰 예약했습니다.</div>
+    </div>`;
+  saveState();
+  arcanaSession = null;
+}
+
 // Spell-specific familiar bonuses (FAMILIAR_BONUS_MAP — live applied in finishCast + UI)
 const FAMILIAR_BONUS_MAP = {
   'flame-spirit': { elemental: 25, spark: 22, binding: 10, default: 12 },
@@ -612,6 +907,23 @@ function updateUI() {
     past.innerHTML += `<div style="font-size:0.75em;opacity:.65;margin-top:4px">총 ${state.insights.length}개 기록 • Legion 무한 학습 엔진</div>`;
   }
 
+  // 오늘의 복습 — 진짜 due 카드 수 반영 (SM-2 간격반복)
+  const arcanaSub = document.getElementById('arcana-hero-sub');
+  if (arcanaSub) {
+    const { due, fresh, freshTotal } = getDueCards();
+    const stats = getMasteryStats();
+    const reviewN = due.length;
+    const newN = fresh.length;
+    if (reviewN === 0 && newN === 0) {
+      arcanaSub.textContent = `오늘 복습 완료 · 정착 ${stats.mastered}/${stats.total}장`;
+    } else {
+      const parts = [];
+      if (reviewN) parts.push(`복습 ${reviewN}장`);
+      if (newN) parts.push(`새 지식 ${newN}장`);
+      arcanaSub.textContent = `${parts.join(' · ')} 대기 · 정착 ${stats.mastered}/${stats.total}`;
+    }
+  }
+
   // Dashboard familiar teaser (live + bonus hint + clickable funnel)
   const dashFam = document.getElementById('dashboard-familiar');
   if (dashFam) {
@@ -703,6 +1015,8 @@ function startLesson(type) {
   const area = document.getElementById('casting-area');
   const title = document.getElementById('lesson-title');
   const game = document.getElementById('cast-game');
+  const sfumato = document.getElementById('cast-sfumato');
+  if (sfumato) sfumato.style.display = 'block'; // 주문 수업은 sfumato 시각 복원 (arcana에서 숨겼을 수 있음)
 
   if (!SPELLS[type]) type = 'elemental';
 
