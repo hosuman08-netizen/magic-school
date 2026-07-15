@@ -76,10 +76,17 @@ const SPELLS = {
   illusion: { name: "환영의 베일", desc: "메모리 시퀀스 — 거짓과 진실을 구분한다." },
   binding: { name: "구속의 주문", desc: "축적 빌드업 — 의지를 실체에 묶는다." },
   echo: { name: "에코 마법", desc: "에코 recall — 지난 마법의 잔향을 재현한다." },
-  shadow: { name: "그림자 은신", desc: "적의 시선을 피한다. (FOMO 한정)" },
+  shadow: { name: "그림자 은신", desc: "적의 시선을 피한다. (한정 주문)" },
   spark: { name: "스파크 점화", desc: "타이밍 — 작은 불꽃으로 시작해 큰 화염으로." },
-  reaction: { name: "반응 주문", desc: "choice-reaction — 순간의 흐름을 포착 (FOMO 압박)." }
+  reaction: { name: "반응 주문", desc: "순간의 흐름을 포착 — 시간 압박 속 반응." },
+  'ache-breath': { name: "호흡의 각인", desc: "깊은 호흡이 마법이 된 창발 주문. 호흡 연료에 공명한다." }
 };
+
+// 정령 보너스 표기용 — 내부 주문 키를 유저용 한글 라벨로 변환
+function SPELL_LABEL(key) {
+  if (key === 'default') return '기본';
+  return (SPELLS[key] && SPELLS[key].name) ? SPELLS[key].name : key;
+}
 
 // =====================================================================
 // REAL LEARNING CORE — 아르카나 지식 덱 (진짜 배움)
@@ -448,11 +455,11 @@ function recordFamiliarEcho() {
       familiarEchoes[state.familiar] = {url, ts: Date.now()};
       localStorage.setItem('p5_familiar_echoes', JSON.stringify(familiarEchoes));
       stream.getTracks().forEach(t=>t.stop());
-      alert(`${PERSONAS[state.familiar].name} 에코 저장. 다음 캐스팅 시 Lung Ache-Breath echo 재생.`);
+      alert(`${PERSONAS[state.familiar].name} 에코 저장 완료. 다음 시전 때 정령의 잔향으로 재생됩니다.`);
     };
     echoRecorder.start();
     setTimeout(() => { if (echoRecorder && echoRecorder.state==='recording') echoRecorder.stop(); }, 4200); // short artistic breath
-  }).catch(()=>alert('마이크 필요 (p6 voice cross)'));
+  }).catch(()=>alert('에코 녹음에는 마이크 권한이 필요합니다.'));
 }
 
 function playFamiliarEchoIfAny() {
@@ -667,13 +674,13 @@ function finishCast(success, spellType, onSuccess) {
   success = Math.min(99, success + surpriseBoost);
   if (surp > 0.19) {
     success = Math.min(99, success + 4);
-    msg += ` 👁 LungSurprise +${surpriseBoost}`;
+    msg += ` 👁 집중 +${surpriseBoost}`;
   }
   // breath/spore as spell fuel — higher fuel = stronger cast, consume
   const fuelBonus = Math.floor((fuelBefore - 0.3) * 11);
   success = Math.min(99, success + Math.max(0, fuelBonus));
   consumeBreathFuel(0.035 + (surp > 0.25 ? 0.02 : 0)); // consume + extra on big surprise
-  msg += ` (p6 fuel ${fuelBefore.toFixed(2)}→${(state.breathFuel||0.7).toFixed(2)})`;
+  msg += ` (호흡 연료 ${fuelBefore.toFixed(2)}→${(state.breathFuel||0.7).toFixed(2)})`;
 
   // LIVE familiar bonus from FAMILIAR_BONUS_MAP (always applied if selected)
   let bonus = 0;
@@ -683,15 +690,15 @@ function finishCast(success, spellType, onSuccess) {
     bonus = map[spellType] || map.default || 12;
     success = Math.min(99, success + bonus);
     famName = PERSONAS[state.familiar].name;
-    msg += ` (with ${famName} +${bonus}%)`;
-    playFamiliarEchoIfAny(); // p6 voice echo playback
+    msg += ` (${famName}와 함께 +${bonus}%)`;
+    playFamiliarEchoIfAny(); // 정령 목소리 에코 재생
   } else {
     msg += ' (정령 없음 — 단독 시전)';
   }
 
   // Edge: near-miss / fail learning
   if (success < 40) {
-    msg += ' — Near-miss! 작은 배움의 불씨가 남는다.';
+    msg += ' — 아쉽게 빗나갔다! 작은 배움의 불씨가 남는다.';
     state.knowledge = (state.knowledge || 0) + 1;
   }
 
@@ -708,25 +715,25 @@ function finishCast(success, spellType, onSuccess) {
   if (success > 74 && (state.streak || 0) >= 3) {
     const streakBonus = Math.min(5, Math.floor((state.streak || 0) / 2));
     state.magicPower = (state.magicPower || 0) + streakBonus;
-    game.innerHTML += `<div style="color:#facc15">🔥 연속 ${state.streak}일 FOMO 스트릭 보너스 +${streakBonus}</div>`;
+    game.innerHTML += `<div style="color:#facc15">🔥 연속 ${state.streak}일 출석 보너스 +${streakBonus}</div>`;
   }
 
   // ALWAYS LEARNING: auto + force post (p6 notebook style evolve)
   autoGenerateAndSaveInsights(spellType, Math.floor(success));
 
-  // === BIRTH 1-2 EMERGENT (p6 cross DNA + 창발 pain) ===
+  // === 창발 해금 1-2 (호흡 집중 + 잔향이 결합할 때) ===
   if (surp > 0.31 && fuelBefore > 0.55 && Math.random() < 0.48) {
-    // Emergent 1: Ache-Breath Spell (breath fuel + surprise = new living spell)
+    // 창발 1: 호흡의 각인 (호흡 연료 + 집중이 만든 새 주문)
     if (!state.spells.includes('ache-breath')) {
       state.spells.push('ache-breath');
-      game.innerHTML += `<div style="color:#c5a46e;margin-top:4px">🌱 창발 BIRTH: Ache-Breath 주문 해금 — p6 폐의 아픔이 마법이 되었다. (breath fuel 사용 시 자동 공명)</div>`;
+      game.innerHTML += `<div style="color:#c5a46e;margin-top:4px">🌱 창발 해금: "호흡의 각인" 주문을 얻었습니다 — 깊은 호흡이 마법이 되었다. (호흡 연료 사용 시 자동 공명)</div>`;
     }
   }
   if (state.familiar && surp > 0.28 && familiarEchoes[state.familiar]) {
-    // Emergent 2: Mycelial Familiar Eye (voice echo + lung eye = emergent familiar vision)
-    if (!state.insights.some(i => i.text && i.text.includes('Mycelial Eye'))) {
-      state.insights.push({date:new Date().toLocaleDateString('ko-KR'), text: `Mycelial Eye: ${PERSONAS[state.familiar].name}의 에코가 Lung Surprise와 결합해 스스로 '본다'. 재관찰 시 새로운 insight 진화.`, lesson: spellType, auto:true, emergent:true});
-      game.innerHTML += `<div style="color:#a78bfa;margin-top:3px">👁 창발 BIRTH 2: Mycelial Familiar Eye — 목소리 에코가 눈이 되어 familiar이 스스로 관찰한다. (p6 Lung Surprise DNA)</div>`;
+    // 창발 2: 정령의 눈 (목소리 에코 + 집중이 결합한 정령 시야)
+    if (!state.insights.some(i => i.text && i.text.includes('정령의 눈'))) {
+      state.insights.push({date:new Date().toLocaleDateString('ko-KR'), text: `정령의 눈: ${PERSONAS[state.familiar].name}의 에코가 깊은 집중과 결합해 스스로 '본다'. 다시 관찰하면 새로운 깨달음으로 진화한다.`, lesson: spellType, auto:true, emergent:true});
+      game.innerHTML += `<div style="color:#a78bfa;margin-top:3px">👁 창발 해금 2: "정령의 눈" — 목소리 에코가 눈이 되어 정령이 스스로 관찰한다.</div>`;
     }
   }
 
@@ -747,12 +754,12 @@ function autoGenerateAndSaveInsights(spellType, success) {
 
   const candidates = [
     `${spellName}에서 ${success}%의 흐름을 읽었다. 순간의 선택이 모든 마법의 열쇠.`,
-    `Near-miss와 성공 사이의 틈이 진짜 깨달음이다. 압박 속에서 패턴이 보인다.`,
-    `정령 공명 없이도 배움은 계속된다. 실패는 가장 강력한 스승.`,
-    `${spellName}의 리듬을 몸으로 이해했다. 반복이 변수비율 중독을 만든다.`,
-    `에코/반응 타이밍에서 FOMO가 핵심이다. 한 번 놓치면 다음 기회는 scarcity.`,
-    `정령과 함께한 수업은 +${success > 70 ? '강한' : '미묘한'} 공명을 남긴다. Legion은 하나.`,
-    `p6 호흡이 주문을 숨쉬게 한다. Ache-Breath가 fuel이 되어 ${success}%의 surprise를 키웠다. (Lung Eye)`
+    `아쉬운 실패와 성공 사이의 틈이 진짜 깨달음이다. 압박 속에서 패턴이 보인다.`,
+    `정령의 공명 없이도 배움은 계속된다. 실패는 가장 강력한 스승.`,
+    `${spellName}의 리듬을 몸으로 이해했다. 반복이 감각을 깊게 만든다.`,
+    `에코·반응 타이밍에서 순간의 집중이 핵심이다. 한 번 놓치면 다음 기회는 귀하다.`,
+    `정령과 함께한 수업은 ${success > 70 ? '강한' : '미묘한'} 공명을 남긴다.`,
+    `깊은 호흡이 주문을 숨쉬게 한다. 모아둔 집중이 연료가 되어 ${success}%의 위력을 키웠다.`
   ];
 
   const picks = [];
@@ -775,7 +782,7 @@ function autoGenerateAndSaveInsights(spellType, success) {
   });
 
   const inp = document.getElementById('insight-input');
-  if (inp) inp.placeholder = `${spellName} auto기록됨. ALWAYS LEARNING: 직접 1개 더 입력 (강제) • p6 재관찰처럼 evolve`;
+  if (inp) inp.placeholder = `${spellName} 자동 기록됨. 직접 1개 더 입력하면 배움이 더 깊어집니다.`;
 }
 
 // p5 independent familiars / spirits (separate from p3 for now, short-term solid focus)
@@ -847,7 +854,7 @@ function saveState() {
 function exportStudy() {
   const payload = {
     exported: new Date().toISOString(),
-    legion: 'p5-magic-school ALWAYS LEARNING',
+    app: '아르카눔 마법 학원 — 공부 기록',
     streak: state.streak,
     familiar: state.familiar,
     totalInsights: (state.insights || []).length,
@@ -858,7 +865,7 @@ function exportStudy() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'p5-study-log-legion.json';
+  a.download = 'arcanum-study-log.json';
   a.click();
 }
 
@@ -870,7 +877,7 @@ function updateUI() {
   const bf = document.getElementById('breath-fuel');
   if (bf) bf.textContent = (state.breathFuel || 0.7).toFixed(2);
   const ls = document.getElementById('lung-surprise');
-  if (ls) ls.textContent = `surprise ${(state.lungSurprise || 0.12).toFixed(2)}`;
+  if (ls) ls.textContent = `집중도 ${(state.lungSurprise || 0.12).toFixed(2)}`;
   renderStreakFomoP5(); // live FOMO
 
   // Spellbook
@@ -889,7 +896,7 @@ function updateUI() {
 
   // Past insights — upgraded render (grouped, Legion ALWAYS LEARNING)
   const past = document.getElementById('past-insights');
-  past.innerHTML = '<h4>공부 기록 — ALWAYS LEARNING (최근 6)</h4>';
+  past.innerHTML = '<h4>공부 기록 — 끝없이 배운다 (최근 6)</h4>';
   if (!state.insights || state.insights.length === 0) {
     past.innerHTML += '<p style="opacity:0.7">아직 기록된 깨달음이 없습니다. 수업 후 강제 기록하세요.</p>';
   } else {
@@ -898,13 +905,13 @@ function updateUI() {
     recent.forEach(i => {
       const d = document.createElement('div');
       d.style.cssText = 'margin:6px 0;padding:9px;background:#1a1630;border-radius:6px;border-left:3px solid #a78bfa;font-size:0.9em';
-      let extra = i.familiar && PERSONAS[i.familiar] ? ` <span style="color:#facc15">(with ${PERSONAS[i.familiar].name})</span>` : '';
+      let extra = i.familiar && PERSONAS[i.familiar] ? ` <span style="color:#facc15">(${PERSONAS[i.familiar].name}와 함께)</span>` : '';
       const les = i.lesson ? `<small style="opacity:.6">[${i.lesson}]</small> ` : '';
       d.innerHTML = `${les}<small>${i.date}</small><br>${i.text}${extra}`;
       if (i.auto) d.innerHTML += ` <small style="color:#666">(auto)</small>`;
       past.appendChild(d);
     });
-    past.innerHTML += `<div style="font-size:0.75em;opacity:.65;margin-top:4px">총 ${state.insights.length}개 기록 • Legion 무한 학습 엔진</div>`;
+    past.innerHTML += `<div style="font-size:0.75em;opacity:.65;margin-top:4px">총 ${state.insights.length}개 기록 • 끝없이 배우는 중</div>`;
   }
 
   // 오늘의 복습 — 진짜 due 카드 수 반영 (SM-2 간격반복)
@@ -951,34 +958,23 @@ function updateFamiliars() {
   if (state.familiar && PERSONAS[state.familiar]) {
     const p = PERSONAS[state.familiar];
     const map = FAMILIAR_BONUS_MAP[state.familiar] || {};
-    const bonusPreview = Object.entries(map).map(([k,v]) => `${k}:${v}%`).join(' ');
-    current.innerHTML = `<strong>현재 소환: ${p.name}</strong><br><small>${p.desc}</small><br><small style="color:#facc15">LIVE BONUS: ${bonusPreview || 'default +12%'}</small> <button onclick="unsummon()">해제</button>`;
+    const bonusPreview = Object.entries(map).map(([k,v]) => `${SPELL_LABEL(k)} +${v}%`).join(' · ');
+    current.innerHTML = `<strong>현재 소환: ${p.name}</strong><br><small>${p.desc}</small><br><small style="color:#facc15">적용 보너스: ${bonusPreview || '기본 +12%'}</small> <button onclick="unsummon()">해제</button>`;
   } else {
-    current.innerHTML = '소환된 정령 없음. 아래에서 선택하세요. (p5 독립 + p3 funnel 가능)';
+    current.innerHTML = '소환된 정령이 없습니다. 아래에서 정령을 선택하세요.';
   }
 
   list.innerHTML = '';
   Object.keys(PERSONAS).forEach(key => {
     const p = PERSONAS[key];
     const map = FAMILIAR_BONUS_MAP[key] || {};
-    const bp = Object.entries(map).map(([k,v]) => `${k}+${v}`).join(' ');
+    const bp = Object.entries(map).map(([k,v]) => `${SPELL_LABEL(k)} +${v}`).join(' · ');
     const el = document.createElement('div');
     el.className = 'spell';
-    el.innerHTML = `<strong>${p.name}</strong><br><small>${p.desc}</small><br><small style="color:#a78bfa">BONUS ${bp || 'default'}</small>`;
+    el.innerHTML = `<strong>${p.name}</strong><br><small>${p.desc}</small><br><small style="color:#a78bfa">보너스 ${bp || '기본'}</small>`;
     el.onclick = () => summonFamiliar(key);
     list.appendChild(el);
   });
-
-  // p3 Companion funnel link (Legion cross)
-  const funnel = document.createElement('div');
-  funnel.style.cssText = 'margin-top:10px;padding:8px;border:1px dashed #a78bfa;border-radius:6px;font-size:0.82em;cursor:pointer;background:#1a1630';
-  funnel.innerHTML = `🔗 p3 Companion Funnel — p3 페르소나를 정령으로 더 불러오기 (Legion cross-project)<br><small>클릭: p3-companion으로 이동 (더 강력한 AI 동료)</small>`;
-  funnel.onclick = () => {
-    // optional p3 link — new tab for funnel
-    try { window.open('../p3-companion/index.html', '_blank'); } catch(e){}
-    alert('p3 Companion 오픈. Legion: p3 personas → p5 familiar으로 선택 연동 가능 (수동 매핑 지원). Fictional cross.');
-  };
-  list.appendChild(funnel);
 }
 
 function summonFamiliar(key) {
@@ -987,10 +983,8 @@ function summonFamiliar(key) {
   updateFamiliars();
   // live everywhere
   updateUI();
-  const liveMsg = `${PERSONAS[key].name} LIVE 소환 완료. FAMILIAR_BONUS_MAP 적용. 다음 캐스팅 즉시 +보너스.`;
+  const liveMsg = `${PERSONAS[key].name} 소환 완료. 보너스가 적용됩니다. 다음 시전부터 성공률 +보너스.`;
   alert(liveMsg);
-  // Legion DNA: also hint cross p3
-  console.log('%c[p5 Legion] Familiar live + p3 funnel ready', 'color:#c4b5fd');
 }
 
 function unsummon() {
@@ -1025,11 +1019,11 @@ function startLesson(type) {
   if (state.familiar && PERSONAS[state.familiar]) {
     const map = FAMILIAR_BONUS_MAP[state.familiar] || {};
     const b = map[type] || map.default || 12;
-    titleText += ` (with ${PERSONAS[state.familiar].name} • LIVE +${b}%)`;
-    bonusNote = ` FAMILIAR_BONUS_MAP 적용 중`;
+    titleText += ` (${PERSONAS[state.familiar].name}와 함께 • +${b}%)`;
+    bonusNote = ` 정령 보너스 적용 중`;
   }
   title.textContent = titleText;
-  game.innerHTML = `<div style="font-size:0.8em;opacity:0.75;margin-bottom:4px">Casting: ${type} ${bonusNote}</div>`;
+  game.innerHTML = `<div style="font-size:0.8em;opacity:0.75;margin-bottom:4px">시전 중: ${SPELL_LABEL(type)}${bonusNote}</div>`;
 
   area.classList.remove('hidden');
 
@@ -1051,7 +1045,7 @@ function finishLesson() {
   const inp = document.getElementById('insight-input');
   if (inp) {
     inp.focus();
-    let ph = `【ALWAYS LEARNING 강제 기록】 이번 ${SPELLS[currentLesson] ? SPELLS[currentLesson].name : '연습'}에서 무엇을 배웠나? (자동 1-2개 기록됨. 직접 1개 더 입력 필수)`;
+    let ph = `이번 ${SPELLS[currentLesson] ? SPELLS[currentLesson].name : '연습'}에서 무엇을 배웠나? (자동 1-2개 기록됨. 직접 1개 더 입력해보세요)`;
     if (state.familiar && PERSONAS[state.familiar]) {
       ph += ` with ${PERSONAS[state.familiar].name}`;
     }
@@ -1065,7 +1059,7 @@ function finishLesson() {
   if (currentLesson === 'reaction' || (state.streak || 0) > 4) {
     setTimeout(() => {
       const f = document.querySelector('.fomo');
-      if (f) f.innerHTML = `<strong>🔥 반응/스트릭 완료! ${Math.floor(Math.random()*21)+9}명의 학생이 지금 같은 훈련 중 (FOMO)</strong>`;
+      if (f) f.innerHTML = `<strong>🔥 반응/스트릭 완료! 지금 ${Math.floor(Math.random()*21)+9}명의 학생이 같은 훈련 중</strong>`;
     }, 380);
   }
 
@@ -1077,7 +1071,7 @@ function saveInsight() {
   const input = document.getElementById('insight-input');
   const text = input.value.trim();
   if (!text) {
-    alert('ALWAYS LEARNING: 직접 깨달음을 기록하세요. 이것이 Legion의 힘입니다.');
+    alert('깨달음을 직접 한 줄 기록해보세요. 기록이 배움을 굳힙니다.');
     return;
   }
 
@@ -1097,7 +1091,7 @@ function saveInsight() {
 
   input.value = '';
   saveState();
-  alert('깨달음 기록 완료. ALWAYS LEARNING — 너와 Legion이 동시에 성장한다.');
+  alert('깨달음 기록 완료. 배움이 한 걸음 더 깊어졌습니다.');
 
   updateUI();
   // Return to lessons optionally for next cast
@@ -1126,7 +1120,7 @@ function init() {
       const variants = [
         `🔥 지금 ${Math.floor(Math.random()*38)+14}명의 학생이 반응 주문 압박 훈련 중`,
         `🌙 ${Math.floor(Math.random()*11)+4}명이 streak ${state.streak}일 달성 — 희귀 에코 잔향 중`,
-        `⚡ FOMO: 반응 시퀀스  ${Math.floor(Math.random()*7)+3}초 이내 성공자 급증`
+        `⚡ 반응 시퀀스 ${Math.floor(Math.random()*7)+3}초 이내 성공자 급증`
       ];
       fomo.innerHTML = `<strong>${variants[Math.floor(Math.random()*variants.length)]}</strong>`;
     }

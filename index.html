@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>아르카눔 마법 학원 • p5</title>
+  <title>아르카눔 마법 학원</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#a78bfa">
@@ -12,13 +12,13 @@
   <div class="container">
     <header>
       <h1>아르카눔 마법 학원</h1>
-      <div class="subtitle">배움은 가장 강력한 마법이다 • Legion ALWAYS LEARNING</div>
+      <div class="subtitle">배움은 가장 강력한 마법이다 • 끝없이 배운다</div>
       <div class="nav">
         <button onclick="showTab('dashboard')">대시보드</button>
         <button onclick="showTab('lessons')">수업</button>
         <button onclick="showTab('spellbook')">주문서</button>
-        <button onclick="showTab('study')">공부 모드 (Learning)</button>
-        <button onclick="showTab('familiars')">소환 (Familiars)</button>
+        <button onclick="showTab('study')">공부 모드</button>
+        <button onclick="showTab('familiars')">정령 소환</button>
       </div>
       <!-- Prominent fictional shield (top, always visible; honest + not visually shouting) -->
       <div class="fictional-shield">
@@ -72,10 +72,10 @@
       </div>
 
       <details class="cross-note">
-        <summary>p6 연동 상태</summary>
+        <summary>호흡 명상 연동</summary>
         <div class="cross-body">
-          호흡 연료 <b id="breath-fuel">0.7</b> · <span id="lung-surprise">surprise 0.12</span>
-          <small>p6 Aether Eye에서 호흡·서프라이즈가 캐스팅 위력에 실시간 반영됩니다.</small>
+          호흡 연료 <b id="breath-fuel">0.7</b> · <span id="lung-surprise">집중도 0.12</span>
+          <small>호흡 명상으로 모은 집중이 주문 시전 위력에 실시간 반영됩니다.</small>
         </div>
       </details>
     </div>
@@ -86,12 +86,12 @@
       <div class="lesson-list">
         <button class="lesson-btn" onclick="startArcanaLesson()" style="border-color:#a78bfa;background:#221c3a">📖 아르카나 지식 복습 (진짜 배움 · 간격반복)</button>
         <button class="lesson-btn" onclick="startLesson('elemental')">원소 조율 (타이밍)</button>
-        <button class="lesson-btn" onclick="startLesson('illusion')">환영의 베일 (메모리)</button>
+        <button class="lesson-btn" onclick="startLesson('illusion')">환영의 베일 (기억)</button>
         <button class="lesson-btn" onclick="startLesson('binding')">구속의 주문 (축적)</button>
-        <button class="lesson-btn" onclick="startLesson('echo')">에코 마법 (echo recall)</button>
+        <button class="lesson-btn" onclick="startLesson('echo')">에코 마법 (잔향 재현)</button>
         <button class="lesson-btn" onclick="startLesson('shadow')">그림자 은신 (한정)</button>
         <button class="lesson-btn" onclick="startLesson('spark')">스파크 점화 (타이밍)</button>
-        <button class="lesson-btn" onclick="startLesson('reaction')">반응 주문 ★ (choice-reaction FOMO)</button>
+        <button class="lesson-btn" onclick="startLesson('reaction')">반응 주문 ★ (순간 반응)</button>
       </div>
       <div id="casting-area" class="hidden">
         <h3 id="lesson-title"></h3>
@@ -99,7 +99,7 @@
         <canvas id="cast-sfumato" width="520" height="92" style="display:block;width:100%;height:72px;background:#120f1f;border-radius:6px;margin:8px 0 4px;border:1px solid #3a2f4a"></canvas>
         <div id="cast-game"></div>
         <button onclick="finishLesson()">수업 완료</button>
-        <small style="opacity:.6">p6 Lung + sfumato + surprise eye live</small>
+        <small style="opacity:.6">호흡 집중 + 잔향 시각 실시간 반영</small>
       </div>
     </div>
 
@@ -111,29 +111,29 @@
 
     <!-- Study / ALWAYS LEARNING -->
     <div id="study" class="tab hidden">
-      <h2>공부 모드 — ALWAYS LEARNING</h2>
+      <h2>공부 모드 — 끝없이 배운다</h2>
       <div class="study-log" style="border:1px solid #4c3f72">
-        <h4 style="margin:0 0 6px">【강제 기록】 이번 세션 깨달음</h4>
-        <div style="font-size:0.75em;opacity:0.7;margin-bottom:6px">수업 후 반드시 기록. Legion은 끝없이 학습한다. auto 1~2 + 수동 1 필수.</div>
-        <textarea id="insight-input" placeholder="이 과정에서 무엇을 배웠나? 어떻게 이해했나? (변수비율, near-miss, 선택의 리듬...)"></textarea>
+        <h4 style="margin:0 0 6px">이번 세션 깨달음 기록</h4>
+        <div style="font-size:0.75em;opacity:0.7;margin-bottom:6px">수업 후 반드시 기록하며 배움을 굳힙니다. 자동 1~2개 + 직접 1개.</div>
+        <textarea id="insight-input" placeholder="이 과정에서 무엇을 배웠나? 어떻게 이해했나? (타이밍, 아쉬운 순간, 선택의 리듬...)"></textarea>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button onclick="saveInsight()" style="flex:1">깨달음 기록 (강제)</button>
-          <button onclick="exportStudy()">Study Log Export</button>
+          <button onclick="saveInsight()" style="flex:1">깨달음 기록</button>
+          <button onclick="exportStudy()">기록 내보내기</button>
         </div>
       </div>
       <div id="past-insights" style="margin-top:12px"></div>
     </div>
 
-    <!-- Familiars / p3 Personas linked as magic spirits (FAMILIAR_BONUS_MAP live) -->
+    <!-- 정령 소환 탭 (정령별 주문 성공률 보너스 적용) -->
     <div id="familiars" class="tab hidden">
       <h2>정령 소환</h2>
       <div style="font-size:0.78em;opacity:0.7;margin:4px 0 12px">함께한 정령이 특정 주문의 성공률을 높여줍니다.</div>
       <div id="current-familiar" style="margin-bottom:12px; padding:8px; background:#1f1a33; border-radius:6px;"></div>
       <div id="familiar-list" class="spell-grid"></div>
-      <!-- p6 voice for familiar echoes (Ache-Breath + Lung Surprise cross) -->
+      <!-- 정령 목소리 에코 녹음 (호흡 집중 반영) -->
       <div style="margin-top:10px;padding:8px;border:1px dashed #c5a46e;border-radius:6px;font-size:0.82em;background:#15120f">
-        🫁 p6 Ache-Breath Echo 녹음: <button onclick="recordFamiliarEcho()" style="padding:4px 10px">정령 에코 녹음 (p6 voice)</button>
-        <small style="display:block;opacity:.65;margin-top:3px">녹음된 목소리가 캐스팅 시 familiar echo로 재생. Lung Surprise + 창발 pain이 주문에 스며든다.</small>
+        🫁 정령 목소리 에코 녹음: <button onclick="recordFamiliarEcho()" style="padding:4px 10px">에코 녹음</button>
+        <small style="display:block;opacity:.65;margin-top:3px">녹음한 목소리가 주문 시전 때 정령의 잔향으로 재생됩니다. 호흡 집중이 클수록 또렷하게 스며듭니다.</small>
       </div>
     </div>
 
@@ -141,7 +141,7 @@
       <div class="fictional-shield" style="margin-bottom:8px">
         <small>FICTIONAL ONLY — 이 앱은 100% 가상의 마법 교육 시뮬레이션입니다. 실제 마법·주문·정령은 존재하지 않습니다. 18+ entertainment only.</small>
       </div>
-      <div class="legion">배움은 가장 강력한 마법이다</div>
+      <div class="footer-motto">배움은 가장 강력한 마법이다</div>
     </footer>
   </div>
 
