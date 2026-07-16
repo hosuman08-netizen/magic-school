@@ -289,3 +289,13 @@ footer {
 #dashboard-familiar, #current-familiar {
   border: 1px solid #3a3454;
 }
+/* 순환 배선: 허브 백링크 (작은 푸터 링크, 주인공 안 뺏김) */
+.more-apps { margin-top: 10px; text-align: center; }
+.more-apps a {
+  font-size: 0.75em;
+  color: #a78bfa;
+  opacity: 0.55;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.more-apps a:hover { opacity: 0.9; }
