@@ -1,3 +1,6 @@
+
+/* LEGION_WAVE_86_today_counter */
+try{var _dk=new Date().toDateString();var _o=JSON.parse(localStorage.getItem('lw_p5_magic_sch_today_counter')||'{}');if(_o.d!==_dk)_o={d:_dk,n:0};_o.n=(_o.n||0)+1;localStorage.setItem('lw_p5_magic_sch_today_counter',JSON.stringify(_o));}catch(e){}
 // p5 마법 스쿨 앱
 // Legion ALWAYS LEARNING: 무조건 과정 속 학습 · 배움 · 이해 · 깨달음
 // Da Vinci anatomy/notebook + full-cheat fusion/cast cross (Morpheus orchestrator p4/p5): Vitruvian cast buffs, sfumato spell FX, notebook insight log. p3 voice + p2 narrative sync. Sense + cheat: FOMO limited grimoires, MY familiar.
