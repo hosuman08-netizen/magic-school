@@ -36,11 +36,31 @@ function getStreakP5() {
     return base;
   } catch { return { lastDate: null, count: 0, days: (state && state.streak ? state.streak : 1) }; }
 }
+function p5DayKey(offset) {
+  const d = new Date(Date.now() + (offset || 0) * 86400000);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
 function updateStreakOnLesson() {
-  const today = new Date().toISOString().slice(0,10);
+  const today = p5DayKey(0);
   let s = getStreakP5();
   if (s.lastDate !== today) {
-    const yest = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+    const yest = p5DayKey(-1);
+    const y2 = p5DayKey(-2);
+    let froze = false;
+    // Duolingo freeze: 1 missed day once/7d if days≥3
+    if (s.lastDate && s.lastDate !== yest && s.lastDate === y2 && (s.days || 0) >= 3) {
+      const ready = !s.shieldLast || ((new Date(today) - new Date(s.shieldLast)) / 86400000) >= 7;
+      if (ready) {
+        s.shieldLast = today;
+        s.lastDate = yest;
+        froze = true;
+        try {
+          if (typeof showToast === 'function') showToast('🛡️ 연속 보호막 · ' + s.days + '일 유지');
+          else if (window.legionTrack) legionTrack('streak_freeze', { count: s.days });
+        } catch (e) {}
+        try { if (window.legionTrack) legionTrack('streak_freeze', { count: s.days }); } catch (e) {}
+      }
+    }
     if (s.lastDate === yest) {
       s.days = (s.days || 1) + 1;
     } else {
@@ -50,6 +70,7 @@ function updateStreakOnLesson() {
     s.count = 1;
     state.lastPlayDate = today;
     state.dailyLessons = 1;
+    try { if (window.legionTrack) legionTrack('streak', { count: s.days, froze: froze }); } catch (e) {}
   } else {
     s.count = (s.count || 0) + 1;
     state.dailyLessons = (state.dailyLessons || 0) + 1;
@@ -65,7 +86,8 @@ function renderStreakFomoP5() {
   if (el) {
     const nextMilestone = Math.ceil((s.days + 1) / 3) * 3;
     const remain = Math.max(0, nextMilestone - s.days);
-    el.textContent = `다음 보상 ${remain}일`;
+    const shieldReady = !s.shieldLast || ((new Date(p5DayKey(0)) - new Date(s.shieldLast)) / 86400000) >= 7;
+    el.textContent = `다음 보상 ${remain}일` + ((s.days || 0) >= 3 && shieldReady ? ' · 🛡️' : '');
   }
   const stat = document.getElementById('streak');
   if (stat) stat.textContent = s.days + '일';
