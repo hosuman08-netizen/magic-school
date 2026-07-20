@@ -869,6 +869,113 @@ function exportStudy() {
   a.click();
 }
 
+// === 아르카나 지식서 (Grimoire): 배운 지식을 다시 펼쳐보는 서고 ===
+let grimoireFilter = 'all';    // all | mastered | learning | locked
+let grimoireOpen = null;       // 펼쳐진 카드 id
+
+function grimNextReviewText(p) {
+  // 다음 복습까지 남은 날 (SM-2 due 기준). 진짜 스케줄 데이터만 표기 (가짜수치 금지).
+  if (!p || p.due == null) return '';
+  const days = p.due - todayNum();
+  if (days <= 0) return '지금 복습 대기';
+  if (days === 1) return '내일 복습 예정';
+  return `${days}일 후 복습 예정`;
+}
+
+function renderGrimoire() {
+  const summary = document.getElementById('grimoire-summary');
+  const filters = document.getElementById('grimoire-filters');
+  const listEl = document.getElementById('grimoire-list');
+  if (!summary || !filters || !listEl) return;
+
+  const prog = getArcanaProgress();
+  const stats = getMasteryStats();
+  const seen = stats.mastered + stats.learning;
+  const pct = stats.total ? Math.round(stats.mastered / stats.total * 100) : 0;
+
+  summary.innerHTML =
+    `펼친 지식 <b>${seen}</b> / ${stats.total} · 장기기억 정착 <b style="color:#4ade80">${stats.mastered}</b>` +
+    `<div class="g-bar"><span style="width:${pct}%"></span></div>` +
+    `<div style="font-size:.72rem;opacity:.65;margin-top:6px">회상에 성공한 지식이 여기 쌓입니다. 카드를 눌러 해설을 다시 펼쳐보세요.</div>`;
+
+  // 필터 칩 (진짜 개수 반영)
+  const locked = stats.total - seen;
+  const chips = [
+    { key: 'all', label: `전체 ${stats.total}` },
+    { key: 'mastered', label: `정착 ${stats.mastered}` },
+    { key: 'learning', label: `학습중 ${stats.learning}` },
+    { key: 'locked', label: `미개봉 ${locked}` }
+  ];
+  filters.innerHTML = '';
+  chips.forEach(c => {
+    const b = document.createElement('button');
+    b.textContent = c.label;
+    if (grimoireFilter === c.key) b.classList.add('active');
+    b.onclick = () => { grimoireFilter = c.key; renderGrimoire(); };
+    filters.appendChild(b);
+  });
+
+  // 카드 목록: 정착 → 학습중 → 미개봉 순 정렬
+  const rank = c => {
+    const p = prog[c.id];
+    if (p && p.mastered) return 0;
+    if (p && (p.reps ?? 0) > 0) return 1;
+    return 2;
+  };
+  const ordered = [...ARCANA].sort((a, b) => rank(a) - rank(b));
+
+  listEl.innerHTML = '';
+  let shown = 0;
+  ordered.forEach(card => {
+    const p = prog[card.id];
+    const state_ = (p && p.mastered) ? 'mastered' : (p && (p.reps ?? 0) > 0) ? 'learning' : 'locked';
+    if (grimoireFilter !== 'all' && grimoireFilter !== state_) return;
+    shown++;
+
+    const el = document.createElement('div');
+    el.className = `grim-card ${state_}`;
+    const statusLabel = state_ === 'mastered'
+      ? `✦ 장기기억 정착 · ${grimNextReviewText(p)}`
+      : state_ === 'learning'
+        ? `복습 ${p.reps || 0}회 · ${grimNextReviewText(p)}`
+        : '아직 회상 성공 전 — 수업에서 펼쳐집니다';
+
+    // 미개봉 카드는 정답/해설을 숨긴다 (배운 것만 서고에 열림 — 진짜 학습 보상)
+    const isLocked = state_ === 'locked';
+    let head =
+      `<div class="grim-head">` +
+        `<span class="grim-front">${isLocked ? '？ ' + card.school + ' 계열 미개봉 지식' : card.front}</span>` +
+        `<span class="grim-tag">${card.school}</span>` +
+      `</div>` +
+      `<div class="grim-status ${state_}">${statusLabel}</div>`;
+
+    el.innerHTML = head;
+
+    if (!isLocked && grimoireOpen === card.id) {
+      const body = document.createElement('div');
+      body.className = 'grim-body';
+      body.innerHTML =
+        `<div class="grim-lore">${card.lore}</div>` +
+        `<div><b style="color:#4ade80">정답:</b> ${card.choices[card.answer]}</div>` +
+        `<div style="margin-top:6px">${card.fact}</div>` +
+        `<div class="grim-next">🔁 ${grimNextReviewText(p)}</div>`;
+      el.appendChild(body);
+    }
+
+    if (!isLocked) {
+      el.onclick = () => {
+        grimoireOpen = (grimoireOpen === card.id) ? null : card.id;
+        renderGrimoire();
+      };
+    }
+    listEl.appendChild(el);
+  });
+
+  if (shown === 0) {
+    listEl.innerHTML = `<div style="font-size:.84rem;opacity:.6;padding:12px 4px">이 분류에 해당하는 지식이 아직 없습니다.</div>`;
+  }
+}
+
 function updateUI() {
   document.getElementById('magic-power').textContent = state.magicPower;
   document.getElementById('knowledge').textContent = state.knowledge;
@@ -879,6 +986,9 @@ function updateUI() {
   const ls = document.getElementById('lung-surprise');
   if (ls) ls.textContent = `집중도 ${(state.lungSurprise || 0.12).toFixed(2)}`;
   renderStreakFomoP5(); // live FOMO
+
+  // 아르카나 지식서 (Grimoire) — 배운 지식 서고
+  renderGrimoire();
 
   // Spellbook
   const list = document.getElementById('spell-list');

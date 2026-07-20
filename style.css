@@ -299,3 +299,110 @@ footer {
   transition: opacity 0.2s;
 }
 .more-apps a:hover { opacity: 0.9; }
+
+/* ── 아르카나 지식서 (Grimoire): 배운 지식이 쌓이는 서고 ── */
+.grimoire-summary {
+  font-size: 0.82rem;
+  color: #b6ade0;
+  background: #1a1630;
+  border: 1px solid #322b4d;
+  border-radius: 8px;
+  padding: 11px 13px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+.grimoire-summary b { color: #e2d9ff; }
+.grimoire-summary .g-bar {
+  height: 6px;
+  background: #0f0c1f;
+  border-radius: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.grimoire-summary .g-bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80, #a78bfa);
+  transition: width .4s ease-out;
+}
+
+.grimoire-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.grimoire-filters button {
+  background: #1f1a33;
+  color: #948cb4;
+  border: 1px solid #322b4d;
+  padding: 5px 11px;
+  border-radius: 14px;
+  font-size: 0.76rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color .12s, border-color .12s, background .12s;
+}
+.grimoire-filters button:hover { border-color: #6b5ca0; }
+.grimoire-filters button.active {
+  color: #0f0c1f;
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.grimoire-list { margin-bottom: 22px; }
+
+.grim-card {
+  background: #1f1a33;
+  border: 1px solid #2a2444;
+  border-left: 3px solid #4c3f72;
+  border-radius: 8px;
+  padding: 11px 13px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color .14s;
+}
+.grim-card:hover { border-left-color: #6b5ca0; }
+.grim-card.mastered { border-left-color: #4ade80; }
+.grim-card.learning { border-left-color: var(--gold); }
+.grim-card.locked { opacity: 0.5; cursor: default; }
+
+.grim-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.grim-front { font-size: 0.94rem; color: #e2d9ff; font-weight: 500; line-height: 1.35; }
+.grim-tag {
+  flex-shrink: 0;
+  font-size: 0.66rem;
+  color: #948cb4;
+  border: 1px solid #322b4d;
+  border-radius: 10px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+.grim-status { font-size: 0.72rem; margin-top: 5px; }
+.grim-status.mastered { color: #4ade80; }
+.grim-status.learning { color: var(--gold); }
+.grim-status.locked { color: #7a729a; }
+
+.grim-body {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid #2a2444;
+  font-size: 0.86rem;
+  color: #c8c1e0;
+  line-height: 1.55;
+}
+.grim-body .grim-lore { font-size: 0.76rem; color: #948cb4; font-style: italic; margin-bottom: 5px; }
+.grim-body .grim-next { font-size: 0.72rem; color: #7a729a; margin-top: 7px; }
+
+.spellbook-sub {
+  font-size: 0.95rem;
+  color: #9a92b8;
+  margin: 6px 0 10px;
+  font-weight: 600;
+}
