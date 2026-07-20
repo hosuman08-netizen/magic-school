@@ -721,6 +721,11 @@ function finishCast(success, spellType, onSuccess) {
     game.innerHTML += `<div style="color:#facc15">🔥 연속 ${state.streak}일 출석 보너스 +${streakBonus}</div>`;
   }
 
+  // share-at-peak after strong cast (emotion high)
+  if (success > 72) {
+    offerMagicSharePeak(Math.floor(success), spellType);
+  }
+
   // ALWAYS LEARNING: auto + force post (p6 notebook style evolve)
   autoGenerateAndSaveInsights(spellType, Math.floor(success));
 
@@ -852,6 +857,40 @@ function saveState() {
   // live familiar bonus UI refresh
   if (document.getElementById('familiars') && !document.getElementById('familiars').classList.contains('hidden')) updateFamiliars();
 }
+
+const MAGIC_SHARE_URL = 'https://hosuman08-netizen.github.io/magic-school/';
+
+function offerMagicSharePeak(success, spellType) {
+  try {
+    const k = 'p5_peak_' + new Date().toISOString().slice(0, 10);
+    if (sessionStorage.getItem(k)) return;
+    sessionStorage.setItem(k, '1');
+    const game = document.getElementById('game') || document.querySelector('.game') || document.querySelector('main');
+    if (!game) return;
+    let peak = document.getElementById('magicSharePeak');
+    if (!peak) {
+      peak = document.createElement('div');
+      peak.id = 'magicSharePeak';
+      peak.style.cssText = 'margin:10px 0;padding:10px 12px;border:1px solid #c9a227;border-radius:8px;background:rgba(20,16,10,.9);text-align:center;font-size:.88rem';
+      game.appendChild(peak);
+    }
+    peak.innerHTML = `<p style="margin:0 0 8px">✨ 시전 성공 ${success}% — 지금 공유하면 자랑이 됩니다</p>`
+      + `<button type="button" onclick="shareMagicPeak()" style="padding:8px 14px;background:#c9a227;color:#111;border:none;border-radius:6px;font-weight:700;cursor:pointer">📤 결과 공유</button> `
+      + `<button type="button" onclick="document.getElementById('magicSharePeak').remove()" style="padding:8px 10px;background:transparent;color:#c9a227;border:1px solid #3a2f22;border-radius:6px;cursor:pointer">나중에</button>`;
+    if (window.legionTrack) try { legionTrack('share_peak_shown', { success: success, spell: spellType }); } catch (e) {}
+  } catch (e) {}
+}
+function shareMagicPeak() {
+  const text = `아르카눔 마법 학원에서 주문 성공! 🔥 연속 ${(state && state.streak) || 1}일\n너도 해봐 → ${MAGIC_SHARE_URL}\n#마법학원 #학습게임`;
+  if (window.legionTrack) try { legionTrack('share_peak', {}); legionTrack('share', {}); } catch (e) {}
+  if (navigator.share) {
+    navigator.share({ title: 'Magic School', text: text, url: MAGIC_SHARE_URL }).catch(function () {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text);
+  }
+  try { const p = document.getElementById('magicSharePeak'); if (p) p.remove(); } catch (e) {}
+}
+window.shareMagicPeak = shareMagicPeak;
 
 // Export study log (ALWAYS LEARNING full)
 function exportStudy() {
