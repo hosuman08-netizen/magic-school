@@ -358,6 +358,9 @@ function finishArcanaSession() {
   if (!state.events) state.events = [];
   state.events.push({ t: Date.now(), type: 'arcana', correct: s.correct, total: s.total, mastered: s.newMastered });
 
+  // 코어루프 완료 = 아르카나 수업(복습) 완료 = 대표 액션
+  if (window.legionTrack) window.legionTrack('activate', { correct: s.correct, total: s.total });
+
   // insight 자동 기록 — 이번엔 진짜 배운 내용 기반
   if (!state.insights) state.insights = [];
   const learned = s.queue.slice(0, Math.min(s.queue.length, 2)).map(c => c.school).filter((v, i, a) => a.indexOf(v) === i).join(', ');
@@ -867,6 +870,7 @@ function exportStudy() {
   a.href = url;
   a.download = 'arcanum-study-log.json';
   a.click();
+  if (window.legionTrack) window.legionTrack('share', {});
 }
 
 // === 아르카나 지식서 (Grimoire): 배운 지식을 다시 펼쳐보는 서고 ===
