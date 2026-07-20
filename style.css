@@ -515,3 +515,147 @@ footer {
 .badge-name { font-size: .74rem; color: #e2d9ff; font-weight: 600; margin-top: 4px; }
 .badge-desc { font-size: .62rem; color: #948cb4; margin-top: 2px; line-height: 1.3; }
 .badge-tally { grid-column: 1 / -1; font-size: .72rem; color: #7a729a; text-align: right; margin-top: 2px; }
+
+/* ══════════ 학원의 길 — 유닛 진행 스킬트리 ══════════ */
+.academy-path { margin: 8px 0 18px; }
+.ap-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px; margin-bottom: 10px;
+}
+.ap-title {
+  font-size: .78rem; font-weight: 600; color: #9a92b8;
+  letter-spacing: .4px; text-transform: uppercase;
+}
+.ap-progress { font-size: .74rem; color: #948cb4; }
+.ap-progress b { color: #4ade80; }
+
+/* 세로 여정 타임라인 — 마커를 잇는 척추선 */
+.ap-track { position: relative; padding-left: 6px; }
+.ap-track::before {
+  content: ""; position: absolute; left: 24px; top: 18px; bottom: 18px;
+  width: 2px; background: linear-gradient(#4c3f72, #2a2444);
+}
+.ap-node {
+  position: relative; display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px 10px 0; margin-bottom: 4px;
+  border-radius: 12px; cursor: pointer;
+  transition: transform .14s ease-out, background .14s ease-out;
+}
+.ap-node.locked { cursor: default; opacity: .5; }
+.ap-node:not(.locked):hover { background: #17131f; }
+.ap-node:not(.locked):active { transform: scale(.99); }
+
+.ap-marker {
+  position: relative; z-index: 1; flex-shrink: 0;
+  width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: #1f1a33; border: 2px solid #4c3f72;
+  transition: border-color .16s ease-out, box-shadow .16s ease-out;
+}
+.ap-icon { font-size: 1.05rem; color: #c4b5fd; line-height: 1; }
+.ap-node.done .ap-marker { border-color: #4ade80; background: #16281c; }
+.ap-node.done .ap-icon { color: #4ade80; }
+.ap-node.current .ap-marker {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(167, 139, 250, .16);
+}
+.ap-node.locked .ap-icon { color: #6b6486; }
+
+.ap-body { flex: 1; min-width: 0; }
+.ap-row1 { display: flex; align-items: baseline; gap: 8px; }
+.ap-name { font-size: .96rem; font-weight: 600; color: #e2d9ff; }
+.ap-node.locked .ap-name { color: #948cb4; }
+.ap-due {
+  flex-shrink: 0; font-size: .64rem; font-weight: 700;
+  color: #1a1108; background: #f0a35e;
+  border-radius: 10px; padding: 1px 8px;
+}
+.ap-blurb { font-size: .72rem; color: #948cb4; margin-top: 2px; line-height: 1.35; }
+.ap-crowns { display: flex; align-items: center; gap: 4px; margin-top: 7px; }
+.ap-pip {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #2a2444; border: 1px solid #3a3454;
+}
+.ap-pip.on { background: var(--gold); border-color: var(--gold); }
+.ap-frac { font-size: .66rem; color: #7a729a; margin-left: 6px; }
+.ap-bar {
+  height: 4px; background: #0f0c1f; border-radius: 3px;
+  margin-top: 6px; overflow: hidden;
+}
+.ap-bar > span {
+  display: block; height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, #6b5ca0, #a78bfa);
+  transition: width .4s ease-out;
+}
+.ap-node.done .ap-bar > span { background: linear-gradient(90deg, #4ade80, #a78bfa); }
+.ap-here {
+  flex-shrink: 0; align-self: flex-start; margin-top: 4px;
+  font-size: .6rem; font-weight: 700; color: #0f0c1f;
+  background: var(--accent); border-radius: 8px; padding: 2px 7px;
+}
+.ap-match {
+  width: 100%; margin-top: 10px; padding: 11px;
+  background: #221c3a; color: #c4b5fd;
+  border: 1px dashed #4c3f72; border-radius: 10px;
+  font-size: .84rem; font-family: inherit; cursor: pointer;
+  transition: border-color .14s ease-out, background .14s ease-out;
+}
+.ap-match:hover { border-color: var(--accent); background: #271f42; }
+.ap-match:active { transform: scale(.99); }
+
+/* ══════════ 매칭 훈련 ══════════ */
+.match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+.match-col { display: flex; flex-direction: column; gap: 8px; }
+.match-item {
+  width: 100%; padding: 13px 11px; text-align: left;
+  background: #1f1a33; border: 1px solid #4c3f72; border-radius: 9px;
+  color: #e5e0f0; font-size: .9em; font-family: inherit; cursor: pointer;
+  line-height: 1.3; min-height: 46px;
+  transition: border-color .12s ease-out, background .12s ease-out, transform .1s ease-out, opacity .3s ease-out;
+}
+.match-item.ans { color: #cdeede; }
+.match-item:hover:not(:disabled) { border-color: #6b5ca0; }
+.match-item.sel { border-color: var(--accent); background: #2a2450; box-shadow: 0 0 0 3px rgba(167,139,250,.14); }
+.match-item.matched {
+  border-color: #4ade80; background: #16281c; color: #7fdca0;
+  opacity: .5; cursor: default;
+}
+.match-item.wrong {
+  border-color: #f87171; background: #2a1618; color: #f7a6a6;
+  animation: match-shake .32s ease-out;
+}
+@keyframes match-shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* ══════════ 복습 예보 (Anki식 forecast) ══════════ */
+.review-forecast {
+  background: #1a1630; border: 1px solid #322b4d; border-radius: 10px;
+  padding: 12px 13px; margin-bottom: 12px;
+}
+.rf-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px; margin-bottom: 10px;
+}
+.rf-title {
+  font-size: .74rem; font-weight: 600; color: #9a92b8;
+  letter-spacing: .3px; text-transform: uppercase;
+}
+.rf-sub { font-size: .72rem; color: #948cb4; }
+.rf-chart {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  align-items: end; gap: 6px; height: 72px;
+}
+.rf-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; }
+.rf-count { font-size: .66rem; color: #b6ade0; font-weight: 600; height: 12px; }
+.rf-bar {
+  width: 100%; max-width: 30px; border-radius: 4px 4px 0 0;
+  background: linear-gradient(#6b5ca0, #a78bfa);
+  transition: height .4s ease-out;
+}
+.rf-bar.today { background: linear-gradient(#facc15, #e0a92e); }
+.rf-bar.empty { background: #2a2444; }
+.rf-label { font-size: .64rem; color: #7a729a; }
+.rf-foot { font-size: .68rem; color: #7a729a; margin-top: 8px; line-height: 1.4; }

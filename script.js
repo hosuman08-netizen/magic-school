@@ -479,8 +479,9 @@ window.showToast = showToast;
 // 현재 진행 중인 지식 수업 세션
 let arcanaSession = null;
 
-// 지식 수업 시작 — 오늘 복습 대상 + 새 카드로 큐 구성
-function startArcanaLesson() {
+// 지식 수업 시작 — 오늘 복습 대상 + 새 카드로 큐 구성.
+// schoolFilter 지정 시 그 학과(유닛)의 카드만 = 학원의 길 유닛 진행.
+function startArcanaLesson(schoolFilter) {
   showTab('lessons');
   const area = document.getElementById('casting-area');
   const title = document.getElementById('lesson-title');
@@ -488,29 +489,37 @@ function startArcanaLesson() {
   const sfumato = document.getElementById('cast-sfumato');
   if (sfumato) sfumato.style.display = 'none'; // 지식 수업은 텍스트 집중
 
-  const { due, fresh, freshTotal } = getDueCards();
-  const queue = [
-    ...due.map(d => d.card),
-    ...fresh
-  ];
+  let { due, fresh } = getDueCards();
+  let dueCards = due.map(d => d.card);
+  if (schoolFilter) {
+    const prog = getArcanaProgress();
+    dueCards = dueCards.filter(c => c.school === schoolFilter);
+    fresh = getUnitCards(schoolFilter).filter(c => !prog[c.id]).slice(0, 4);
+  }
+  const queue = [...dueCards, ...fresh];
+  const unitName = schoolFilter && UNIT_META[schoolFilter] ? UNIT_META[schoolFilter].name : null;
 
   if (queue.length === 0) {
-    title.textContent = '아르카나 지식 — 오늘 복습 완료';
+    title.textContent = (unitName ? unitName + ' — ' : '아르카나 지식 — ') + '오늘 복습 완료';
     const mk = getMistakeCards().length;
     game.innerHTML = `<div style="padding:12px;line-height:1.6">
-      <div style="font-size:1.05em;color:#a78bfa">오늘 복습할 지식이 모두 정착됐습니다. 🌙</div>
+      <div style="font-size:1.05em;color:#a78bfa">${unitName ? unitName + '의 오늘 복습을 마쳤습니다. 🌙' : '오늘 복습할 지식이 모두 정착됐습니다. 🌙'}</div>
       <div style="opacity:.8;margin-top:6px">간격반복(FSRS)이 각 카드의 다음 복습일을 기억 안정성에 맞춰 자동 예약했습니다. 내일 다시 오면 기억이 흐려질 때쯤의 카드가 떠오릅니다.</div>
       <div style="margin-top:8px;font-size:.85em;opacity:.7">이것이 진짜 학습의 원리 — 잊기 직전에 다시 만나 장기기억으로 굳힙니다.</div>
-      ${mk ? `<button onclick="startMistakesLesson()" style="margin-top:12px;width:100%">🩹 오답 노트 복습 (${mk}장)</button>` : ''}
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button onclick="startMatchingLesson(${schoolFilter ? `'${schoolFilter}'` : ''})" style="flex:1">🔀 매칭 훈련</button>
+        ${mk ? `<button onclick="startMistakesLesson()" style="flex:1">🩹 오답 노트 (${mk}장)</button>` : ''}
+      </div>
     </div>`;
     area.classList.remove('hidden');
     return;
   }
 
-  arcanaSession = { queue, idx: 0, correct: 0, total: queue.length, gainedKnowledge: 0, newMastered: 0, mode: 'review' };
+  arcanaSession = { queue, idx: 0, correct: 0, total: queue.length, gainedKnowledge: 0, newMastered: 0, mode: 'review', unit: schoolFilter || null };
   area.classList.remove('hidden');
   renderArcanaCard();
 }
+window.startArcanaLesson = startArcanaLesson;
 
 // 오답 노트 세션 — 틀린 카드만 모아 별도 복습 (due 무관, 약점 정복 전용)
 function startMistakesLesson() {
@@ -1258,6 +1267,299 @@ function exportStudy() {
   if (window.legionTrack) window.legionTrack('share', {});
 }
 
+// =====================================================================
+// 학원의 길 — 유닛 진행 스킬트리 (Duolingo식 학습 경로)
+// 평평한 카드 풀을 학과(school) 단위 유닛으로 묶어 진행의 축을 만든다.
+// 유닛 왕관 레벨·잠금해제는 전부 실제 FSRS 숙련 상태로만 계산 (가짜 없음).
+// =====================================================================
+const UNIT_ORDER = ['룬어원', '천문', '신화', '물질'];
+const UNIT_META = {
+  '룬어원': { name: '룬어원 학과', icon: 'ᚱ', blurb: '주문의 어근 — 말의 뿌리를 읽다' },
+  '천문':   { name: '천문 관측탑', icon: '☾', blurb: '천체의 진실 — 별과 빛의 법칙' },
+  '신화':   { name: '신화 서고',   icon: '✶', blurb: '정령의 기원 — 오래된 이야기' },
+  '물질':   { name: '물질 연성실', icon: '⬡', blurb: '물질의 진실 — 원소와 결정' }
+};
+function getUnitCards(school) { return ARCANA.filter(c => c.school === school); }
+function getUnitStats(school) {
+  const prog = getArcanaProgress();
+  const cards = getUnitCards(school);
+  const t = todayNum();
+  let mastered = 0, learning = 0, due = 0, fresh = 0;
+  cards.forEach(c => {
+    const p = prog[c.id];
+    if (!p) { fresh++; return; }
+    if (p.mastered) mastered++;
+    else if ((p.reps ?? 0) > 0) learning++;
+    if ((p.due ?? 0) <= t) due++;
+  });
+  const total = cards.length;
+  const seen = mastered + learning;
+  const frac = total ? mastered / total : 0;
+  let crown = 0; // 0~3 왕관 — 정착 비율로만 (결정적)
+  if (frac >= 1 && total > 0) crown = 3;
+  else if (frac >= 0.6) crown = 2;
+  else if (mastered >= 1) crown = 1;
+  return { school, total, mastered, learning, seen, due, fresh, frac, crown };
+}
+// 유닛 잠금해제: 첫 유닛은 항상 열림. 이후는 직전 유닛을 최소 1장 배웠을 때(정직·결정적).
+function isUnitUnlocked(i) {
+  if (i <= 0) return true;
+  return getUnitStats(UNIT_ORDER[i - 1]).seen >= 1;
+}
+// 현재 집중 유닛 = 잠금해제됐고 아직 완전정착 전인 첫 유닛
+function currentUnitIndex() {
+  for (let i = 0; i < UNIT_ORDER.length; i++) {
+    if (isUnitUnlocked(i) && getUnitStats(UNIT_ORDER[i]).frac < 1) return i;
+  }
+  return UNIT_ORDER.length - 1;
+}
+function renderAcademyPath() {
+  const el = document.getElementById('academy-path');
+  if (!el) return;
+  const cur = currentUnitIndex();
+  const totalMastered = UNIT_ORDER.reduce((a, s) => a + getUnitStats(s).mastered, 0);
+  const totalCards = ARCANA.length;
+  const overallPct = totalCards ? Math.round(totalMastered / totalCards * 100) : 0;
+
+  let html = `<div class="ap-head"><div class="ap-title">학원의 길</div>` +
+    `<div class="ap-progress">정착 <b>${totalMastered}</b>/${totalCards} · ${overallPct}%</div></div>` +
+    `<div class="ap-track">`;
+  UNIT_ORDER.forEach((school, i) => {
+    const st = getUnitStats(school);
+    const meta = UNIT_META[school];
+    const unlocked = isUnitUnlocked(i);
+    const done = st.frac >= 1 && st.total > 0;
+    const isCur = i === cur && unlocked && !done;
+    const pct = st.total ? Math.round(st.mastered / st.total * 100) : 0;
+    const cls = !unlocked ? 'locked' : done ? 'done' : isCur ? 'current' : 'open';
+    const pips = [0, 1, 2].map(k => `<span class="ap-pip${k < st.crown ? ' on' : ''}"></span>`).join('');
+    const dueBadge = unlocked && st.due > 0 ? `<span class="ap-due">복습 ${st.due}</span>` : '';
+    const markerGlyph = !unlocked ? '🔒' : (done ? '✓' : meta.icon);
+    html += `<div class="ap-node ${cls}"${unlocked ? ` onclick="startArcanaLesson('${school}')" role="button" tabindex="0"` : ''}>` +
+      `<div class="ap-marker"><span class="ap-icon">${markerGlyph}</span></div>` +
+      `<div class="ap-body">` +
+        `<div class="ap-row1"><span class="ap-name">${meta.name}</span>${dueBadge}</div>` +
+        `<div class="ap-blurb">${unlocked ? meta.blurb : '이전 학과를 배우면 열립니다'}</div>` +
+        `<div class="ap-crowns">${pips}<span class="ap-frac">${st.mastered}/${st.total} 정착 · ${pct}%</span></div>` +
+        `<div class="ap-bar"><span style="width:${pct}%"></span></div>` +
+      `</div>` +
+      (isCur ? `<div class="ap-here">여기</div>` : '') +
+    `</div>`;
+  });
+  html += `</div>`;
+  html += `<button class="ap-match" onclick="startMatchingLesson()">🔀 매칭 훈련 — 배운 지식을 빠르게 연결</button>`;
+  el.innerHTML = html;
+}
+
+// =====================================================================
+// 매칭 훈련 — 세 번째 인출 방식 (객관식·타이핑에 이은 매칭)
+// 질문↔정답을 짝짓는 다른 방식의 회상. 결과는 실제 FSRS로 스케줄 (정직).
+// 한번에 연결 = Good(3), 헤매면 = Hard(2). 많이 틀린 카드는 오답 노트로.
+// =====================================================================
+let matchSession = null;
+function startMatchingLesson(schoolFilter) {
+  showTab('lessons');
+  const area = document.getElementById('casting-area');
+  const title = document.getElementById('lesson-title');
+  const game = document.getElementById('cast-game');
+  const sfumato = document.getElementById('cast-sfumato');
+  if (sfumato) sfumato.style.display = 'none';
+  area.classList.remove('hidden');
+
+  const prog = getArcanaProgress();
+  const t = todayNum();
+  const pool = ARCANA.filter(c => schoolFilter ? c.school === schoolFilter : true);
+  // 우선순위: 복습대기(0) → 학습중(1) → 새 카드(2) → 정착·비대기(3)
+  const rank = c => {
+    const p = prog[c.id];
+    if (p && (p.reps ?? 0) > 0 && (p.due ?? 0) <= t && !p.mastered) return 0;
+    if (p && (p.reps ?? 0) > 0 && !p.mastered) return 1;
+    if (!p) return 2;
+    return 3;
+  };
+  const ordered = [...pool].sort((a, b) => (rank(a) - rank(b)) || (Math.random() - 0.5));
+  const cards = ordered.slice(0, Math.min(5, ordered.length));
+  if (cards.length < 2) {
+    title.textContent = '매칭 훈련';
+    game.innerHTML = `<div style="padding:12px;opacity:.8">매칭에는 지식이 2개 이상 필요합니다. 먼저 지식 복습을 해보세요.</div>`;
+    return;
+  }
+  const rightOrder = cards.map((_, i) => i);
+  for (let i = rightOrder.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [rightOrder[i], rightOrder[j]] = [rightOrder[j], rightOrder[i]]; }
+  matchSession = { cards, rightOrder, selLeft: null, selRight: null, matched: {}, attempts: {}, done: 0, wrong: 0, locked: false, wrongFlash: null, unit: schoolFilter || null };
+  title.textContent = '매칭 훈련 — 질문과 정답을 연결';
+  renderMatching();
+}
+window.startMatchingLesson = startMatchingLesson;
+
+function renderMatching() {
+  const game = document.getElementById('cast-game');
+  const s = matchSession;
+  if (!s || !game) return;
+  const total = s.cards.length;
+  const pct = Math.round(s.done / total * 100);
+  const short = (v, n) => { v = String(v); return v.length > n ? v.slice(0, n - 1) + '…' : v; };
+  const wf = s.wrongFlash;
+  let html = `<div class="lesson-progress"><span style="width:${pct}%"></span></div>`;
+  html += `<div style="font-size:.76em;opacity:.7;margin:8px 0 10px">질문을 누르고 정답을 누르면 연결됩니다 · <b>${s.done}/${total}</b> 연결</div>`;
+  html += `<div class="match-grid"><div class="match-col">`;
+  s.cards.forEach((c, i) => {
+    const m = s.matched[i];
+    const sel = s.selLeft === i;
+    const wrong = wf && wf.L === i;
+    html += `<button class="match-item${m ? ' matched' : ''}${sel ? ' sel' : ''}${wrong ? ' wrong' : ''}" data-side="L" data-i="${i}"${m ? ' disabled' : ''}>${short(c.front, 30)}</button>`;
+  });
+  html += `</div><div class="match-col">`;
+  s.rightOrder.forEach(i => {
+    const c = s.cards[i];
+    const m = s.matched[i];
+    const sel = s.selRight === i;
+    const wrong = wf && wf.R === i;
+    html += `<button class="match-item ans${m ? ' matched' : ''}${sel ? ' sel' : ''}${wrong ? ' wrong' : ''}" data-side="R" data-i="${i}"${m ? ' disabled' : ''}>${short(c.choices[c.answer], 24)}</button>`;
+  });
+  html += `</div></div>`;
+  game.innerHTML = html;
+  const btns = game.querySelectorAll ? game.querySelectorAll('.match-item') : [];
+  btns.forEach(btn => {
+    if (btn.disabled) return;
+    btn.onclick = () => onMatchPick(btn.dataset.side, parseInt(btn.dataset.i, 10));
+  });
+}
+
+function onMatchPick(side, i) {
+  const s = matchSession;
+  if (!s || s.locked) return;
+  if (side === 'L') s.selLeft = (s.selLeft === i ? null : i);
+  else s.selRight = (s.selRight === i ? null : i);
+
+  if (s.selLeft != null && s.selRight != null) {
+    const L = s.selLeft, R = s.selRight;
+    if (L === R) {
+      s.matched[L] = true;
+      s.done++;
+      s.selLeft = null; s.selRight = null;
+      renderMatching();
+      if (s.done >= s.cards.length) { s.locked = true; setTimeout(finishMatching, 320); }
+    } else {
+      s.attempts[L] = (s.attempts[L] || 0) + 1;
+      s.attempts[R] = (s.attempts[R] || 0) + 1;
+      s.wrong++;
+      s.wrongFlash = { L, R };
+      s.locked = true;
+      renderMatching();
+      setTimeout(() => {
+        s.selLeft = null; s.selRight = null; s.wrongFlash = null; s.locked = false;
+        renderMatching();
+      }, 520);
+    }
+  } else {
+    renderMatching();
+  }
+}
+
+function finishMatching() {
+  const s = matchSession;
+  if (!s) return;
+  const game = document.getElementById('cast-game');
+  const title = document.getElementById('lesson-title');
+  const prog = getArcanaProgress();
+  let firstTry = 0, newMastered = 0;
+  s.cards.forEach((c, i) => {
+    const att = s.attempts[i] || 0;
+    const clean = att === 0;
+    if (clean) firstTry++;
+    const rating = clean ? 3 : 2; // 첫 연결 성공=Good, 헤맴=Hard
+    const prev = prog[c.id] || {};
+    const wasMastered = !!prev.mastered;
+    const updated = scheduleCard(prev, rating);
+    prog[c.id] = { ...updated };
+    if (updated.mastered && !wasMastered) newMastered++;
+    if (att >= 2) addMistake(c.id);
+    else if (clean) resolveMistake(c.id, true);
+  });
+  saveArcanaProgress(prog);
+
+  const sessionXP = firstTry * 8 + (s.cards.length - firstTry) * 4 + newMastered * 12;
+  awardXP(sessionXP);
+  const kGain = firstTry * 2 + newMastered * 5;
+  state.knowledge = (state.knowledge || 0) + kGain;
+  state.magicPower = (state.magicPower || 0) + Math.ceil(kGain / 2);
+  updateStreakOnLesson();
+
+  if (!state.events) state.events = [];
+  state.events.push({ t: Date.now(), type: 'matching', cards: s.cards.length, firstTry, wrong: s.wrong, xp: sessionXP });
+  if (window.legionTrack) { try { legionTrack('activate', { mode: 'matching', correct: firstTry, total: s.cards.length, xp: sessionXP }); } catch (e) {} }
+
+  if (!state.insights) state.insights = [];
+  const schools = [...new Set(s.cards.map(c => c.school))].join(', ');
+  state.insights.push({ date: new Date().toLocaleDateString('ko-KR'), text: `매칭 훈련: ${schools} 계열 ${s.cards.length}쌍 중 ${firstTry}쌍 한번에 연결.${newMastered ? ` ${newMastered}장 장기기억 정착.` : ''}`, lesson: 'matching', auto: true });
+
+  const goal = getDailyGoal();
+  const goalPct = Math.min(100, Math.round(goal.xpToday / goal.goalXp * 100));
+  title.textContent = '매칭 훈련 완료';
+  game.innerHTML =
+    `<div style="padding:8px 4px;line-height:1.6">
+      <div style="font-size:1.15em;color:#a78bfa;font-weight:600">한번에 연결 ${firstTry}/${s.cards.length}${s.wrong ? ` · 재시도 ${s.wrong}회` : ' · 완벽!'}</div>
+      <div style="margin-top:8px">지식 +${kGain} · XP +${sessionXP}${newMastered ? ` · ✦ ${newMastered}장 장기기억 정착` : ''}</div>
+      <div style="margin-top:10px;padding:10px;background:#1a1630;border-radius:6px;font-size:.9em">오늘의 목표 <b style="color:${goalPct >= 100 ? '#4ade80' : '#facc15'}">${goal.xpToday}/${goal.goalXp} XP</b> (${goalPct}%)</div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button onclick="startMatchingLesson(${s.unit ? `'${s.unit}'` : ''})" style="flex:1">🔀 한 판 더</button>
+        <button onclick="startArcanaLesson(${s.unit ? `'${s.unit}'` : ''})" style="flex:1">📖 지식 복습</button>
+      </div>
+      <div style="font-size:.78em;opacity:.65;margin-top:8px">매칭도 간격반복(FSRS)에 반영됩니다 — 한번에 연결한 지식은 다음 복습이 더 멀어집니다.</div>
+    </div>`;
+  saveState();
+  checkNewBadges();
+  matchSession = null;
+}
+
+// =====================================================================
+// 복습 예보 — 앞으로 7일간 복습 예정 카드 수 시각화 (Anki식 forecast)
+// 전부 실제 FSRS due 날짜에서 계산 (가짜수치 없음). 돌아올 이유를 만든다.
+// =====================================================================
+function getReviewForecast(days) {
+  const prog = getArcanaProgress();
+  const t = todayNum();
+  const buckets = new Array(days).fill(0);
+  let overdue = 0, scheduled = 0;
+  ARCANA.forEach(c => {
+    const p = prog[c.id];
+    if (!p || p.due == null) return;
+    scheduled++;
+    const d = p.due - t;
+    if (d <= 0) { buckets[0]++; if (d < 0) overdue++; }
+    else if (d < days) buckets[d]++;
+  });
+  return { buckets, overdue, scheduled };
+}
+function renderReviewForecast() {
+  const el = document.getElementById('review-forecast');
+  if (!el) return;
+  const days = 7;
+  const { buckets, overdue, scheduled } = getReviewForecast(days);
+  if (scheduled === 0) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+  el.classList.remove('hidden');
+  const max = Math.max(1, buckets[0], buckets[1], buckets[2], buckets[3], buckets[4], buckets[5], buckets[6]);
+  const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+  const now = new Date();
+  let bars = '';
+  for (let i = 0; i < days; i++) {
+    const label = i === 0 ? '오늘' : i === 1 ? '내일' : dayNames[new Date(now.getTime() + i * 86400000).getDay()];
+    const n = buckets[i];
+    const h = n === 0 ? 3 : Math.round(n / max * 44) + 8;
+    bars += `<div class="rf-col">` +
+      `<div class="rf-count">${n || ''}</div>` +
+      `<div class="rf-bar${i === 0 ? ' today' : ''}${n === 0 ? ' empty' : ''}" style="height:${h}px"></div>` +
+      `<div class="rf-label">${label}</div>` +
+    `</div>`;
+  }
+  el.innerHTML =
+    `<div class="rf-head"><span class="rf-title">복습 예보 · 7일</span>` +
+    `<span class="rf-sub">${overdue > 0 ? `<b style="color:#f0a35e">${overdue} 지연</b> · ` : ''}예약 ${scheduled}장</span></div>` +
+    `<div class="rf-chart">${bars}</div>` +
+    `<div class="rf-foot">간격반복(FSRS)이 기억이 흐려질 때쯤으로 예약한 실제 일정입니다.</div>`;
+}
+
 // === 아르카나 지식서 (Grimoire): 배운 지식을 다시 펼쳐보는 서고 ===
 let grimoireFilter = 'all';    // all | mastered | learning | locked
 let grimoireOpen = null;       // 펼쳐진 카드 id
@@ -1439,8 +1741,12 @@ function updateUI() {
   if (ls) ls.textContent = `집중도 ${(state.lungSurprise || 0.12).toFixed(2)}`;
   renderStreakFomoP5(); // live FOMO
 
-  // 아르카나 지식서 (Grimoire) — 배운 지식 서고
+  // 학원의 길 (유닛 진행 스킬트리) — 대시보드 진행 축
+  renderAcademyPath();
+
+  // 아르카나 지식서 (Grimoire) — 배운 지식 서고 + 복습 예보
   renderGrimoire();
+  renderReviewForecast();
 
   // 리텐션 레이어: 데일리 목표 · 주간 승급 리그 · 오답 노트 · 업적
   renderDailyGoal();
