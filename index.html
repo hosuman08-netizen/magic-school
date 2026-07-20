@@ -82,6 +82,15 @@
         </div>
       </div>
 
+      <!-- 리텐션 스트립: 데일리 목표 링 + 주간 승급 리그 (실제 XP 기반) -->
+      <div class="progress-strip">
+        <div id="daily-goal" class="pg-goal"></div>
+        <div id="league-tier" class="pg-league"></div>
+      </div>
+
+      <!-- 오답 노트 진입 (틀린 지식 있을 때만 표시) -->
+      <div id="mistakes-card" class="mistakes-card hidden"></div>
+
       <div id="dashboard-familiar" class="soft-card"></div>
 
       <div class="fomo">
@@ -129,6 +138,9 @@
       <div id="grimoire-summary" class="grimoire-summary"></div>
       <div id="grimoire-filters" class="grimoire-filters"></div>
       <div id="grimoire-list" class="grimoire-list"></div>
+
+      <h3 class="spellbook-sub">업적</h3>
+      <div id="badge-grid" class="badge-grid"></div>
 
       <h3 class="spellbook-sub">시전 주문</h3>
       <div id="spell-list" class="spell-grid"></div>
