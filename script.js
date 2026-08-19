@@ -175,6 +175,9 @@ function renderStreakWeek() {
   if (dEl) {
     const d = getP5TodayLessons() - getP5YestLessons();
     dEl.textContent = 'Δ' + (d > 0 ? '+' : '') + d;
+    dEl.classList.toggle('up', d > 0);
+    dEl.classList.toggle('down', d < 0);
+    dEl.classList.toggle('zero', d === 0);
     dEl.setAttribute('title', '오늘 수업 − 어제 수업 · 이 기기만 · 오답 아님');
   }
   if (tapEl) {
