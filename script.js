@@ -80,8 +80,40 @@ function updateStreakOnLesson() {
   }
   try { localStorage.setItem('p5-streak', JSON.stringify(s)); } catch(e){}
   state.streak = s.days;
+  markP5WeekDay();
   renderStreakFomoP5();
   return s;
+}
+function getP5WeekDays() {
+  let days = {};
+  try { days = JSON.parse(localStorage.getItem('p5_week_days') || '{}'); } catch (e) {}
+  if (!days || typeof days !== 'object') days = {};
+  const s = getStreakP5();
+  if (s.lastDate) days[s.lastDate] = 1;
+  return days;
+}
+function markP5WeekDay() {
+  try {
+    const days = getP5WeekDays();
+    days[p5DayKey(0)] = 1;
+    const keep = {};
+    for (let i = 0; i < 14; i++) {
+      const k = p5DayKey(-i);
+      if (days[k]) keep[k] = 1;
+    }
+    localStorage.setItem('p5_week_days', JSON.stringify(keep));
+  } catch (e) {}
+}
+function renderStreakWeek() {
+  const el = document.getElementById('streakWeek');
+  if (!el) return;
+  const days = getP5WeekDays();
+  const bits = [];
+  for (let i = 6; i >= 0; i--) {
+    const k = p5DayKey(-i);
+    bits.push(`<i class="sw-dot${days[k] ? ' on' : ''}${i === 0 ? ' today' : ''}" title="${k}"></i>`);
+  }
+  el.innerHTML = bits.join('');
 }
 function renderStreakFomoP5() {
   const s = getStreakP5();
@@ -102,6 +134,7 @@ function renderStreakFomoP5() {
   }
   const stat = document.getElementById('streak');
   if (stat) stat.textContent = days + '일';
+  renderStreakWeek();
 }
 
 const SPELLS = {
