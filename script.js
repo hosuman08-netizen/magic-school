@@ -101,6 +101,9 @@ function getP5WeekLessons() {
 function getP5YestLessons() {
   return getP5DayLessons()[p5DayKey(-1)] || 0;
 }
+function getP5TodayLessons() {
+  return getP5DayLessons()[p5DayKey(0)] || 0;
+}
 function bumpP5DayLessons() {
   try {
     const k = p5DayKey(0);
@@ -151,6 +154,7 @@ function renderStreakWeek() {
   const nEl = document.getElementById('streakWeekN');
   const sumEl = document.getElementById('streakWeekLessons');
   const yestEl = document.getElementById('streakYestLessons');
+  const vsEl = document.getElementById('streakTodayVsYest');
   const tapEl = document.getElementById('streakDayTap');
   const days = getP5WeekDays();
   const bits = [];
@@ -166,6 +170,7 @@ function renderStreakWeek() {
   if (nEl) nEl.textContent = '이번 주 ' + n + '/7';
   if (sumEl) sumEl.textContent = '이번 주 수업 ' + getP5WeekLessons() + '회';
   if (yestEl) yestEl.textContent = '어제 수업 ' + getP5YestLessons() + '회';
+  if (vsEl) vsEl.textContent = '오늘 ' + getP5TodayLessons() + ' · 어제 ' + getP5YestLessons();
   if (tapEl) {
     if (p5WeekTap) {
       const on = !!days[p5WeekTap];
