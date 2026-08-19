@@ -104,19 +104,43 @@ function markP5WeekDay() {
     localStorage.setItem('p5_week_days', JSON.stringify(keep));
   } catch (e) {}
 }
+let p5WeekTap = null;
+function p5WeekdayKo(k) {
+  const p = String(k || '').split('-');
+  if (p.length !== 3) return '';
+  const dt = new Date(+p[0], +p[1] - 1, +p[2]);
+  if (isNaN(dt.getTime())) return '';
+  return ['일', '월', '화', '수', '목', '금', '토'][dt.getDay()] || '';
+}
+function tapP5WeekDay(k) {
+  p5WeekTap = p5WeekTap === k ? null : k;
+  renderStreakWeek();
+}
 function renderStreakWeek() {
   const el = document.getElementById('streakWeek');
   const nEl = document.getElementById('streakWeekN');
+  const tapEl = document.getElementById('streakDayTap');
   const days = getP5WeekDays();
   const bits = [];
   let n = 0;
   for (let i = 6; i >= 0; i--) {
     const k = p5DayKey(-i);
-    if (days[k]) n++;
-    bits.push(`<i class="sw-dot${days[k] ? ' on' : ''}${i === 0 ? ' today' : ''}" title="${k}"></i>`);
+    const on = !!days[k];
+    if (on) n++;
+    const cls = 'sw-dot' + (on ? ' on' : '') + (i === 0 ? ' today' : '') + (p5WeekTap === k ? ' sel' : '');
+    bits.push(`<button type="button" class="${cls}" data-day="${k}" aria-label="${k}${on ? ' 출석' : ' 미출석'}" title="${k}" onclick="tapP5WeekDay('${k}')"></button>`);
   }
   if (el) el.innerHTML = bits.join('');
   if (nEl) nEl.textContent = '이번 주 ' + n + '/7';
+  if (tapEl) {
+    if (p5WeekTap) {
+      const on = !!days[p5WeekTap];
+      const wd = p5WeekdayKo(p5WeekTap);
+      tapEl.textContent = p5WeekTap.slice(5) + (wd ? ' ' + wd : '') + (on ? ' · 출석' : ' · 미출석');
+    } else {
+      tapEl.textContent = '';
+    }
+  }
 }
 function renderStreakFomoP5() {
   const s = getStreakP5();
