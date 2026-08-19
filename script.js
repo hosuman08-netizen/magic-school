@@ -159,6 +159,12 @@ function clearP5VsJump(vs) {
 function jumpP5TodayVsYest() {
   const vs = document.getElementById('streakTodayVsYest');
   if (!vs) return;
+  if (vs.classList.contains('vs-jump')) {
+    try { clearTimeout(vs._jumpT); } catch (e0) {}
+    vs._jumpT = 0;
+    clearP5VsJump(vs);
+    return;
+  }
   try { vs.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
   clearP5VsJump(vs);
   vs.style.outline = '';
