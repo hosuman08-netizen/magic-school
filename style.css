@@ -84,10 +84,11 @@ header h1 {
   color: #9a7b2e;
   margin-top: 2px;
 }
-.chip-delta{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;border:1px solid #3a2f22;font-size:0.68rem;color:#c5a46e}
+.chip-delta{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;border:1px solid #3a2f22;font-size:0.68rem;color:#c5a46e;cursor:pointer}
 .chip-delta.up{color:#86efac;border-color:#2d4a3a}
 .chip-delta.down{color:#f0a8a8;border-color:#4a2d2d}
 .chip-delta.zero{color:#8a8398;border-color:#2a2440}
+#streakTodayVsYest.vs-jump{color:#facc15;outline:1px solid #facc15;outline-offset:2px;border-radius:4px}
 #streakShieldCopy { color: #c4b5fd; }
 .streak-week { display: flex; gap: 4px; margin-top: 6px; justify-content: center; }
 .streak-week .sw-dot {

@@ -149,6 +149,16 @@ function tapP5WeekDay(k) {
   p5WeekTap = p5WeekTap === k ? null : k;
   renderStreakWeek();
 }
+function jumpP5TodayVsYest() {
+  const vs = document.getElementById('streakTodayVsYest');
+  if (!vs) return;
+  try { vs.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
+  vs.classList.remove('vs-jump');
+  void vs.offsetWidth;
+  vs.classList.add('vs-jump');
+  try { clearTimeout(vs._jumpT); } catch (e2) {}
+  vs._jumpT = setTimeout(function () { try { vs.classList.remove('vs-jump'); } catch (e3) {} }, 800);
+}
 function renderStreakWeek() {
   const el = document.getElementById('streakWeek');
   const nEl = document.getElementById('streakWeekN');
@@ -178,7 +188,13 @@ function renderStreakWeek() {
     dEl.classList.toggle('up', d > 0);
     dEl.classList.toggle('down', d < 0);
     dEl.classList.toggle('zero', d === 0);
-    dEl.setAttribute('title', '오늘 수업 − 어제 수업 · 절댓값 · 부호는 색 · 이 기기만 · 오답 아님');
+    dEl.setAttribute('title', '오늘 수업 − 어제 수업 · 탭=오늘vs어제 점프 · 이 기기만 · 오답 아님');
+    dEl.setAttribute('role', 'button');
+    dEl.setAttribute('tabindex', '0');
+    dEl.onclick = jumpP5TodayVsYest;
+    dEl.onkeydown = function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); jumpP5TodayVsYest(); }
+    };
   }
   if (tapEl) {
     if (p5WeekTap) {
