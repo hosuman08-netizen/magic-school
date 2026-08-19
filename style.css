@@ -88,7 +88,7 @@ header h1 {
 .chip-delta.up{color:#86efac;border-color:#2d4a3a}
 .chip-delta.down{color:#f0a8a8;border-color:#4a2d2d}
 .chip-delta.zero{color:#8a8398;border-color:#2a2440}
-#streakTodayVsYest.vs-jump{animation:vsJump .8s ease-out;outline-offset:2px;border-radius:4px}
+#streakTodayVsYest.vs-jump{animation:vsJump .8s ease-out;outline-offset:2px;border-radius:4px;cursor:pointer}
 @keyframes vsJump{0%{color:#facc15;outline:1px solid #facc15}100%{color:#9a92b8;outline:1px solid transparent}}
 #streakShieldCopy { color: #c4b5fd; }
 .streak-week { display: flex; gap: 4px; margin-top: 6px; justify-content: center; }

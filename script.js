@@ -156,15 +156,17 @@ function clearP5VsJump(vs) {
   vs.style.boxShadow = 'none';
   vs.style.color = '';
 }
+function killP5VsJump(vs) {
+  if (!vs || !vs.classList.contains('vs-jump')) return false;
+  try { clearTimeout(vs._jumpT); } catch (e0) {}
+  vs._jumpT = 0;
+  clearP5VsJump(vs);
+  return true;
+}
 function jumpP5TodayVsYest() {
   const vs = document.getElementById('streakTodayVsYest');
   if (!vs) return;
-  if (vs.classList.contains('vs-jump')) {
-    try { clearTimeout(vs._jumpT); } catch (e0) {}
-    vs._jumpT = 0;
-    clearP5VsJump(vs);
-    return;
-  }
+  if (killP5VsJump(vs)) return;
   try { vs.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
   clearP5VsJump(vs);
   vs.style.outline = '';
@@ -195,7 +197,16 @@ function renderStreakWeek() {
   if (nEl) nEl.textContent = '이번 주 ' + n + '/7';
   if (sumEl) sumEl.textContent = '이번 주 수업 ' + getP5WeekLessons() + '회';
   if (yestEl) yestEl.textContent = '어제 수업 ' + getP5YestLessons() + '회';
-  if (vsEl) vsEl.textContent = '오늘 ' + getP5TodayLessons() + ' · 어제 ' + getP5YestLessons();
+  if (vsEl) {
+    vsEl.textContent = '오늘 ' + getP5TodayLessons() + ' · 어제 ' + getP5YestLessons();
+    vsEl.setAttribute('role', 'button');
+    vsEl.setAttribute('tabindex', '0');
+    vsEl.setAttribute('title', '잔광 중 탭=끄기 · 이 기기만 · 오답 아님');
+    vsEl.onclick = function () { killP5VsJump(vsEl); };
+    vsEl.onkeydown = function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); killP5VsJump(vsEl); }
+    };
+  }
   const dEl = document.getElementById('streakDeltaChip');
   if (dEl) {
     const d = getP5TodayLessons() - getP5YestLessons();
