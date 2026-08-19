@@ -73,16 +73,37 @@ function updateStreakOnLesson() {
     s.count = 1;
     state.lastPlayDate = today;
     state.dailyLessons = 1;
+    bumpP5DayLessons();
     try { if (window.legionTrack) legionTrack('streak', { count: s.days, froze: froze }); } catch (e) {}
   } else {
     s.count = (s.count || 0) + 1;
     state.dailyLessons = (state.dailyLessons || 0) + 1;
+    bumpP5DayLessons();
   }
   try { localStorage.setItem('p5-streak', JSON.stringify(s)); } catch(e){}
   state.streak = s.days;
   markP5WeekDay();
   renderStreakFomoP5();
   return s;
+}
+function getP5DayLessons() {
+  let m = {};
+  try { m = JSON.parse(localStorage.getItem('p5_day_lessons') || '{}'); } catch (e) {}
+  if (!m || typeof m !== 'object') m = {};
+  return m;
+}
+function bumpP5DayLessons() {
+  try {
+    const k = p5DayKey(0);
+    const m = getP5DayLessons();
+    m[k] = (m[k] || 0) + 1;
+    const keep = {};
+    for (let i = 0; i < 14; i++) {
+      const d = p5DayKey(-i);
+      if (m[d]) keep[d] = m[d];
+    }
+    localStorage.setItem('p5_day_lessons', JSON.stringify(keep));
+  } catch (e) {}
 }
 function getP5WeekDays() {
   let days = {};
@@ -136,7 +157,8 @@ function renderStreakWeek() {
     if (p5WeekTap) {
       const on = !!days[p5WeekTap];
       const wd = p5WeekdayKo(p5WeekTap);
-      tapEl.textContent = p5WeekTap.slice(5) + (wd ? ' ' + wd : '') + (on ? ' · 출석' : ' · 미출석');
+      const lessons = (getP5DayLessons()[p5WeekTap] || 0);
+      tapEl.textContent = p5WeekTap.slice(5) + (wd ? ' ' + wd : '') + (on ? ' · 출석' : ' · 미출석') + (lessons ? ' · 수업 ' + lessons + '회' : '');
     } else {
       tapEl.textContent = '';
     }
