@@ -413,6 +413,30 @@ footer {
 .hd-meta { font-size: 0.7rem; color: #7a729a; }
 .hd-card:hover { border-color: #a78bfa; }
 
+.paste-box {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #161326;
+  border: 1px solid #3a3258;
+  border-radius: 8px;
+}
+.paste-box textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 6px 0 8px;
+  padding: 10px;
+  background: #0f0c1f;
+  border: 1px solid #4c3f72;
+  border-radius: 8px;
+  color: #e5e0f0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  resize: vertical;
+  font-family: inherit;
+}
+.paste-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.paste-row button { flex: 1; min-width: 88px; }
+
 .spellbook-sub {
   font-size: 0.95rem;
   color: #9a92b8;

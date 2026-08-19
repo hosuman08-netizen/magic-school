@@ -309,7 +309,71 @@ const HOUSE_CARDS = [
     lore:'수능·내신 빈도 높음.',
     fact:'significant = 중요한·통계적으로 의미 있는. 명사 significance. 반의어 insignificant.' }
 ];
-function allCards() { return ARCANA.concat(HOUSE_CARDS); }
+/* GOLD50 TOP3: 붙여넣기 Q/A + ==cloze==. 서버/AI 없음. 오답 선택지 발명 없음. */
+const USER_SCHOOL = '내덱';
+const USER_CARDS_KEY = 'p5-user-cards';
+const USER_CARDS_MAX = 200;
+
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+  });
+}
+
+function getUserCards() {
+  try {
+    const list = JSON.parse(localStorage.getItem(USER_CARDS_KEY) || '[]');
+    if (!Array.isArray(list)) return [];
+    return list.filter(c => c && c.id && c.front && Array.isArray(c.choices) && c.choices.length);
+  } catch (e) { return []; }
+}
+function saveUserCards(list) {
+  try { localStorage.setItem(USER_CARDS_KEY, JSON.stringify((list || []).slice(0, USER_CARDS_MAX))); } catch (e) {}
+}
+
+function parsePasteCards(text) {
+  const lines = String(text || '').split(/\r?\n/);
+  const out = [];
+  let i = 0;
+  while (i < lines.length) {
+    const raw = lines[i].trim();
+    i++;
+    if (!raw) continue;
+    if (/==[^=]+==/.test(raw)) {
+      const answers = [];
+      const front = raw.replace(/==([^=]+)==/g, function (_, w) {
+        answers.push(String(w).trim());
+        return '____';
+      });
+      if (answers.length && front.replace(/_/g, '').trim()) {
+        out.push({ front: front, answerText: answers.join(' · '), cloze: true });
+      }
+      continue;
+    }
+    if (/\s+\/\s+/.test(raw) || raw.indexOf('\t') >= 0) {
+      const parts = raw.indexOf('\t') >= 0 ? raw.split(/\t+/) : raw.split(/\s+\/\s+/);
+      const q = (parts[0] || '').trim();
+      const a = parts.slice(1).join(' / ').trim();
+      if (q && a) out.push({ front: q, answerText: a, cloze: false });
+      continue;
+    }
+    if (/^Q[:：]\s*/i.test(raw)) {
+      const q = raw.replace(/^Q[:：]\s*/i, '').trim();
+      let a = '';
+      while (i < lines.length) {
+        const n = lines[i].trim();
+        if (!n) { i++; if (a) break; continue; }
+        if (/^A[:：]\s*/i.test(n)) { a = n.replace(/^A[:：]\s*/i, '').trim(); i++; break; }
+        if (/^Q[:：]\s*/i.test(n) || /==[^=]+==/.test(n) || /\s+\/\s+/.test(n)) break;
+        a = n; i++; break;
+      }
+      if (q && a) out.push({ front: q, answerText: a, cloze: false });
+    }
+  }
+  return out.slice(0, 80);
+}
+
+function allCards() { return ARCANA.concat(HOUSE_CARDS, getUserCards()); }
 
 // 간격반복 상태: cardId -> {S(안정성), D(난이도), interval, reps, due, lapses, mastered, last, state}
 function getArcanaProgress() {
@@ -689,16 +753,17 @@ function renderArcanaCard() {
   let html = `<div class="lesson-progress"><span style="width:${pct}%"></span></div>`;
   html += `<div style="font-size:.78em;opacity:.7;margin:8px 0 4px">${modeTag}${s.idx + 1} / ${s.total} · ${status} · ${fmtLabel}</div>`;
   // 레벨 0만 lore 힌트 노출 (스캐폴드) — 레벨↑ 시 힌트 제거로 난이도 상승
-  if (level === 0) html += `<div style="font-size:.72em;opacity:.55;margin-bottom:4px">${card.lore}</div>`;
-  html += `<div style="font-size:1.12em;font-weight:600;margin:10px 0 14px;line-height:1.4">${card.front}</div>`;
+  if (level === 0 && card.lore) html += `<div style="font-size:.72em;opacity:.55;margin-bottom:4px">${escHtml(card.lore)}</div>`;
+  html += `<div style="font-size:1.12em;font-weight:600;margin:10px 0 14px;line-height:1.4">${escHtml(card.front)}</div>`;
 
-  if (level < 2) {
-    // 객관식 재인
+  const canMC = level < 2 && card.choices && card.choices.length >= 2;
+  if (canMC) {
+    // 객관식 재인 — 선택지가 실제로 있는 카드만. 붙여넣기 1답은 오답 발명 금지.
     html += `<div id="arcana-choices" style="display:flex;flex-direction:column;gap:8px">`;
     const order = card.choices.map((_, i) => i);
     for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
     order.forEach(origIdx => {
-      html += `<button class="arcana-choice" data-idx="${origIdx}" style="text-align:left;padding:11px 13px;background:#1f1a33;border:1px solid #4c3f72;border-radius:8px;color:#e5e0f0;cursor:pointer;font-size:.98em">${card.choices[origIdx]}</button>`;
+      html += `<button class="arcana-choice" data-idx="${origIdx}" style="text-align:left;padding:11px 13px;background:#1f1a33;border:1px solid #4c3f72;border-radius:8px;color:#e5e0f0;cursor:pointer;font-size:.98em">${escHtml(card.choices[origIdx])}</button>`;
     });
     html += `</div>`;
     game.innerHTML = html;
@@ -743,7 +808,9 @@ function answerArcanaTyped(typed) {
   const rv = document.getElementById('arcana-reveal');
   if (inp) inp.disabled = true;
   if (rv) rv.remove();
-  const answerText = card.choices[card.answer];
+  const answerText = (card.choices && card.choices[card.answer] != null)
+    ? card.choices[card.answer]
+    : (card.fact || '');
   // 관대한 자동 힌트 (완전 일치 시 표시만; 채점은 사용자 자가판정 = 정직)
   const norm = t => (t || '').toLowerCase().replace(/[\s()（）]/g, '').replace(/[·,.]/g, '');
   const looksRight = norm(typed) && norm(typed) === norm(answerText.split('(')[0]) || norm(typed) === norm(answerText);
@@ -751,9 +818,9 @@ function answerArcanaTyped(typed) {
   const reveal = document.createElement('div');
   reveal.style.cssText = 'margin-top:12px;padding:12px;background:#15130f;border-left:3px solid #a78bfa;border-radius:6px;line-height:1.55';
   reveal.innerHTML =
-    `<div style="font-size:.76em;opacity:.6">당신의 답: <b style="color:#e5e0f0">${(typed || '(비움)').slice(0, 40)}</b></div>` +
-    `<div style="margin-top:4px"><b style="color:#4ade80">정답:</b> ${answerText}</div>` +
-    `<div style="font-size:.94em;margin-top:6px">${card.fact}</div>` +
+    `<div style="font-size:.76em;opacity:.6">당신의 답: <b style="color:#e5e0f0">${escHtml((typed || '(비움)').slice(0, 40))}</b></div>` +
+    `<div style="margin-top:4px"><b style="color:#4ade80">정답:</b> ${escHtml(answerText)}</div>` +
+    `<div style="font-size:.94em;margin-top:6px">${escHtml(card.fact || '')}</div>` +
     (looksRight ? `<div style="font-size:.74em;color:#4ade80;margin-top:6px">✓ 입력이 정답과 일치합니다</div>` : '');
   game.appendChild(reveal);
 
@@ -1401,7 +1468,8 @@ const UNIT_META = {
   '룬어원': { name: '룬어원 학과', icon: 'ᚱ', blurb: '주문의 어근 — 말의 뿌리를 읽다' },
   '천문':   { name: '천문 관측탑', icon: '☾', blurb: '천체의 진실 — 별과 빛의 법칙' },
   '신화':   { name: '신화 서고',   icon: '✶', blurb: '정령의 기원 — 오래된 이야기' },
-  '물질':   { name: '물질 연성실', icon: '⬡', blurb: '물질의 진실 — 원소와 결정' }
+  '물질':   { name: '물질 연성실', icon: '⬡', blurb: '물질의 진실 — 원소와 결정' },
+  '내덱':   { name: '내 덱', icon: '✎', blurb: '붙여넣기 Q/A · ==cloze== · 서버 없음' }
 };
 function getUnitCards(school) { return allCards().filter(c => c.school === school); }
 function getUnitStats(school) {
@@ -1701,6 +1769,7 @@ function renderHouseDecks() {
   const el = document.getElementById('house-decks');
   if (!el) return;
   const prog = getArcanaProgress();
+  const mine = getUserCards();
   el.innerHTML = '<div class="hd-head">하우스 기성 덱 <span>로컬 JSON · 서버 없음</span></div>' +
     '<div class="hd-grid">' + HOUSE_BUNDLES.map(b => {
       const cards = getUnitCards(b.school);
@@ -1708,7 +1777,67 @@ function renderHouseDecks() {
       return `<button class="hd-card" type="button" onclick="startArcanaLesson('${b.school}')">` +
         `<b>${b.name}</b><span class="hd-blurb">${b.blurb}</span>` +
         `<span class="hd-meta">${cards.length}장 · 펼침 ${seen}</span></button>`;
-    }).join('') + '</div>';
+    }).join('') + '</div>' +
+    '<div class="paste-box">' +
+      '<div class="hd-head">붙여넣기 카드 <span>Q / A · ==빈칸== · AI/서버 없음</span></div>' +
+      '<textarea id="paste-src" rows="4" placeholder="물의 화학식은? / H₂O&#10;프랑스는 ==파리==가 수도다"></textarea>' +
+      '<div class="paste-row">' +
+        '<button type="button" id="paste-add">카드 만들기</button>' +
+        '<button type="button" id="paste-study">내 덱 수업 (' + mine.length + ')</button>' +
+        '<button type="button" id="paste-clear">내 덱 비우기</button>' +
+      '</div>' +
+      '<div class="hd-meta" id="paste-meta">내 덱 ' + mine.length + '장 · 오답 선택지 발명 없음 · 인출로 복습</div>' +
+    '</div>';
+  const add = document.getElementById('paste-add');
+  const src = document.getElementById('paste-src');
+  const study = document.getElementById('paste-study');
+  const clear = document.getElementById('paste-clear');
+  if (add && src) add.onclick = function () {
+    const parsed = parsePasteCards(src.value);
+    if (!parsed.length) {
+      if (typeof showToast === 'function') showToast('형식: 질문 / 답  또는  ==빈칸==');
+      return;
+    }
+    const now = Date.now();
+    const cur = getUserCards();
+    const room = Math.max(0, USER_CARDS_MAX - cur.length);
+    const addN = parsed.slice(0, room).map(function (p, idx) {
+      return {
+        id: 'u_' + now + '_' + idx,
+        school: USER_SCHOOL,
+        front: p.front,
+        choices: [p.answerText],
+        answer: 0,
+        lore: p.cloze ? '빈칸(cloze) · 붙여넣기' : 'Q/A · 붙여넣기',
+        fact: p.answerText,
+        user: true
+      };
+    });
+    if (!addN.length) {
+      if (typeof showToast === 'function') showToast('내 덱이 가득 (' + USER_CARDS_MAX + ')');
+      return;
+    }
+    saveUserCards(cur.concat(addN));
+    src.value = '';
+    if (typeof showToast === 'function') showToast(addN.length + '장 추가 · 서버 없음');
+    renderHouseDecks();
+    renderGrimoire();
+    try { if (window.legionTrack) legionTrack('activate', { paste: addN.length }); } catch (e) {}
+  };
+  if (study) study.onclick = function () {
+    if (!getUserCards().length) {
+      if (typeof showToast === 'function') showToast('먼저 붙여넣기로 카드를 만드세요');
+      return;
+    }
+    startArcanaLesson(USER_SCHOOL);
+  };
+  if (clear) clear.onclick = function () {
+    if (!getUserCards().length) return;
+    if (!confirm('내 덱(붙여넣기 카드)만 지울까요? 하우스 덱은 유지됩니다.')) return;
+    saveUserCards([]);
+    renderHouseDecks();
+    renderGrimoire();
+  };
 }
 
 function renderGrimoire() {
