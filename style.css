@@ -92,6 +92,7 @@ header h1 {
 }
 .streak-week .sw-dot.on { background: #c4b5fd; }
 .streak-week .sw-dot.today { outline: 1px solid #facc15; outline-offset: 1px; }
+#streakWeekN { display: block; font-size: 0.62rem; color: #c4b5fd; margin-top: 4px; }
 
 /* ── Today: the hero block ── */
 .today { margin: 8px 0 16px; }

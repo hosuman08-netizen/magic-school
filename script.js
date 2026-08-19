@@ -106,14 +106,17 @@ function markP5WeekDay() {
 }
 function renderStreakWeek() {
   const el = document.getElementById('streakWeek');
-  if (!el) return;
+  const nEl = document.getElementById('streakWeekN');
   const days = getP5WeekDays();
   const bits = [];
+  let n = 0;
   for (let i = 6; i >= 0; i--) {
     const k = p5DayKey(-i);
+    if (days[k]) n++;
     bits.push(`<i class="sw-dot${days[k] ? ' on' : ''}${i === 0 ? ' today' : ''}" title="${k}"></i>`);
   }
-  el.innerHTML = bits.join('');
+  if (el) el.innerHTML = bits.join('');
+  if (nEl) nEl.textContent = '이번 주 ' + n + '/7';
 }
 function renderStreakFomoP5() {
   const s = getStreakP5();
