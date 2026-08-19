@@ -784,11 +784,10 @@ function renderArcanaCard() {
   }
 }
 
-// 객관식 채점 → Good/Again
+// 객관식 채점 → 정답 표시 후 4버튼 (Again/Hard/Good/Easy). 오답 선택지 발명 없음.
 function answerArcanaMC(chosenIdx, btnEl) {
   const s = arcanaSession;
   const card = s.queue[s.idx];
-  const correct = chosenIdx === card.answer;
   document.querySelectorAll('.arcana-choice').forEach(b => {
     b.onclick = null; b.disabled = true;
     const bi = parseInt(b.dataset.idx, 10);
@@ -796,10 +795,38 @@ function answerArcanaMC(chosenIdx, btnEl) {
     else if (b === btnEl) { b.style.borderColor = '#f87171'; b.style.background = '#2a1618'; }
     else b.style.opacity = '0.5';
   });
-  commitArcanaResult(card, correct ? 3 : 1, correct);
+  showGradeButtons(card);
 }
 
-// 타이핑 인출 → 정답 공개 후 자가채점(다시/맞음/쉬웠음)
+// GOLD50 TOP4: 카드 뒤 4버튼. 간격만 로컬 FSRS. 가짜 숙련 점수 없음.
+function showGradeButtons(card) {
+  const game = document.getElementById('cast-game');
+  if (!game) return;
+  if (document.getElementById('arcana-grade')) return;
+  const prev = (getArcanaProgress()[card.id] || {});
+  const grade = document.createElement('div');
+  grade.id = 'arcana-grade';
+  grade.style.cssText = 'display:flex;gap:6px;margin-top:12px;flex-wrap:wrap';
+  const ivLabel = (days) => (days < 1 ? '오늘' : days + '일');
+  const mk = (label, rating, col) => {
+    const pred = scheduleCard(prev, rating);
+    const b = document.createElement('button');
+    b.style.cssText = `flex:1 1 22%;min-width:64px;padding:10px 4px;border:1px solid ${col};background:transparent;color:${col};border-radius:8px;cursor:pointer;font-size:.84em;line-height:1.25`;
+    b.innerHTML = `<div>${label}</div><div style="font-size:.68em;opacity:.7">${ivLabel(pred.interval)}</div>`;
+    b.onclick = () => {
+      grade.remove();
+      commitArcanaResult(card, rating, rating >= 3);
+    };
+    return b;
+  };
+  grade.appendChild(mk('다시', 1, '#f87171'));
+  grade.appendChild(mk('어려움', 2, '#fbbf24'));
+  grade.appendChild(mk('보통', 3, '#a78bfa'));
+  grade.appendChild(mk('쉬움', 4, '#4ade80'));
+  game.appendChild(grade);
+}
+
+// 타이핑 인출 → 정답 공개 후 자가채점 4버튼
 function answerArcanaTyped(typed) {
   const s = arcanaSession;
   const card = s.queue[s.idx];
@@ -810,10 +837,10 @@ function answerArcanaTyped(typed) {
   if (rv) rv.remove();
   const answerText = (card.choices && card.choices[card.answer] != null)
     ? card.choices[card.answer]
-    : (card.fact || '');
+    : (card.answerText || card.fact || '');
   // 관대한 자동 힌트 (완전 일치 시 표시만; 채점은 사용자 자가판정 = 정직)
   const norm = t => (t || '').toLowerCase().replace(/[\s()（）]/g, '').replace(/[·,.]/g, '');
-  const looksRight = norm(typed) && norm(typed) === norm(answerText.split('(')[0]) || norm(typed) === norm(answerText);
+  const looksRight = norm(typed) && (norm(typed) === norm(answerText.split('(')[0]) || norm(typed) === norm(answerText));
 
   const reveal = document.createElement('div');
   reveal.style.cssText = 'margin-top:12px;padding:12px;background:#15130f;border-left:3px solid #a78bfa;border-radius:6px;line-height:1.55';
@@ -823,20 +850,7 @@ function answerArcanaTyped(typed) {
     `<div style="font-size:.94em;margin-top:6px">${escHtml(card.fact || '')}</div>` +
     (looksRight ? `<div style="font-size:.74em;color:#4ade80;margin-top:6px">✓ 입력이 정답과 일치합니다</div>` : '');
   game.appendChild(reveal);
-
-  const grade = document.createElement('div');
-  grade.style.cssText = 'display:flex;gap:8px;margin-top:12px';
-  const mk = (label, rating, col) => {
-    const b = document.createElement('button');
-    b.textContent = label;
-    b.style.cssText = `flex:1;padding:11px 6px;border:1px solid ${col};background:transparent;color:${col};border-radius:8px;cursor:pointer;font-size:.9em`;
-    b.onclick = () => { grade.remove(); reveal.querySelectorAll('button').forEach(x=>x.remove()); commitArcanaResult(card, rating, rating >= 3); };
-    return b;
-  };
-  grade.appendChild(mk('다시', 1, '#f87171'));
-  grade.appendChild(mk('맞음', 3, '#a78bfa'));
-  grade.appendChild(mk('쉬웠음', 4, '#4ade80'));
-  game.appendChild(grade);
+  showGradeButtons(card);
 }
 
 // 공통 채점 커밋 — FSRS 스케줄 + 오답노트 갱신 + 해설 + 다음 버튼
