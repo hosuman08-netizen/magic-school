@@ -173,6 +173,7 @@ function jumpP5TodayVsYest() {
   vs.style.boxShadow = '';
   void vs.offsetWidth;
   vs.classList.add('vs-jump');
+  try { vs.focus(); } catch (eF) {}
   try { clearTimeout(vs._jumpT); } catch (e2) {}
   vs._jumpT = setTimeout(function () { try { clearP5VsJump(vs); } catch (e3) {} }, 800);
 }
@@ -201,10 +202,13 @@ function renderStreakWeek() {
     vsEl.textContent = '오늘 ' + getP5TodayLessons() + ' · 어제 ' + getP5YestLessons();
     vsEl.setAttribute('role', 'button');
     vsEl.setAttribute('tabindex', '0');
-    vsEl.setAttribute('title', '잔광 중 탭=끄기 · 이 기기만 · 오답 아님');
+    vsEl.setAttribute('title', '잔광 중 Enter/Space=끄기 · 이 기기만 · 오답 아님');
     vsEl.onclick = function () { killP5VsJump(vsEl); };
     vsEl.onkeydown = function (ev) {
-      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); killP5VsJump(vsEl); }
+      if (ev.key === 'Enter' || ev.key === ' ' || ev.code === 'Space') {
+        ev.preventDefault();
+        killP5VsJump(vsEl);
+      }
     };
   }
   const dEl = document.getElementById('streakDeltaChip');
