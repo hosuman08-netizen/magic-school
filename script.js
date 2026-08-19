@@ -86,14 +86,22 @@ function updateStreakOnLesson() {
 function renderStreakFomoP5() {
   const s = getStreakP5();
   const el = document.getElementById('streak-fomo-text');
+  const days = s.days || 0;
+  const usedAgo = s.shieldLast ? Math.floor((new Date(p5DayKey(0)) - new Date(s.shieldLast)) / 86400000) : 99;
+  const shieldReady = !s.shieldLast || usedAgo >= 7;
   if (el) {
-    const nextMilestone = Math.ceil((s.days + 1) / 3) * 3;
-    const remain = Math.max(0, nextMilestone - s.days);
-    const shieldReady = !s.shieldLast || ((new Date(p5DayKey(0)) - new Date(s.shieldLast)) / 86400000) >= 7;
-    el.textContent = `다음 보상 ${remain}일` + ((s.days || 0) >= 3 && shieldReady ? ' · 🛡️' : '');
+    const nextMilestone = Math.ceil((days + 1) / 3) * 3;
+    const remain = Math.max(0, nextMilestone - days);
+    el.textContent = `다음 보상 ${remain}일` + (days >= 3 && shieldReady ? ' · 🛡️' : '');
+  }
+  const copy = document.getElementById('streakShieldCopy');
+  if (copy) {
+    if (s.shieldLast && usedAgo < 7) copy.textContent = `보호막 사용 · 다음 ${Math.max(0, 7 - usedAgo)}일 후`;
+    else if (days >= 3) copy.textContent = '보호막 준비 · 하루 빠지면 유지';
+    else copy.textContent = `연속 3일부터 보호막 · 지금 ${days}일`;
   }
   const stat = document.getElementById('streak');
-  if (stat) stat.textContent = s.days + '일';
+  if (stat) stat.textContent = days + '일';
 }
 
 const SPELLS = {

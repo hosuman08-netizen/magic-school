@@ -84,6 +84,7 @@ header h1 {
   color: #9a7b2e;
   margin-top: 2px;
 }
+#streakShieldCopy { color: #c4b5fd; }
 
 /* ── Today: the hero block ── */
 .today { margin: 8px 0 16px; }
