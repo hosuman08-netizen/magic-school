@@ -400,6 +400,19 @@ footer {
 .grim-body .grim-lore { font-size: 0.76rem; color: #948cb4; font-style: italic; margin-bottom: 5px; }
 .grim-body .grim-next { font-size: 0.72rem; color: #7a729a; margin-top: 7px; }
 
+.house-decks { margin: 10px 0 16px; }
+.hd-head { font-size: 0.82rem; color: #9a92b8; font-weight: 600; margin-bottom: 8px; }
+.hd-head span { font-weight: 400; opacity: .65; margin-left: 6px; font-size: 0.72rem; }
+.hd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hd-card {
+  text-align: left; padding: 10px 12px; border-radius: 8px; cursor: pointer;
+  background: #1a1630; border: 1px solid #4c3f72; color: #e5e0f0;
+}
+.hd-card b { display: block; color: #c4b5fd; font-size: 0.88rem; }
+.hd-blurb { display: block; font-size: 0.72rem; color: #948cb4; margin: 4px 0; }
+.hd-meta { font-size: 0.7rem; color: #7a729a; }
+.hd-card:hover { border-color: #a78bfa; }
+
 .spellbook-sub {
   font-size: 0.95rem;
   color: #9a92b8;

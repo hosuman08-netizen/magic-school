@@ -190,6 +190,127 @@ const ARCANA = [
     fact:'물은 수소 원자 2개와 산소 원자 1개의 결합(H₂O). 굽은 구조 때문에 극성을 띠어 "만능 용매"가 된다.' }
 ];
 
+/* GOLD50 TOP2: Quizlet/AnkiWeb 공유덱 볼륨 — 서버 없이 기성 5덱 JSON 번들.
+   사실은 검증 가능한 실지식(화학·룬시·라틴·천문·고교영단어). 점술/가짜마법 금지. */
+const HOUSE_BUNDLES = [
+  { id: 'el', school: '원소', name: '원소원 하우스', blurb: '주기율표·물질 사실', n: 5 },
+  { id: 'rn', school: '룬', name: '룬각 하우스', blurb: '엘더 푸타르크·룬시 기록', n: 5 },
+  { id: 'lt', school: '라틴어근', name: '라틴근 하우스', blurb: '고교 필수 라틴 어근', n: 6 },
+  { id: 'st', school: '별자리', name: '별자리 하우스', blurb: '별자리=천문(점성 아님)', n: 5 },
+  { id: 'en', school: '영단어', name: '영단어 하우스', blurb: 'KR 고교 필수 영단어', n: 6 }
+];
+const HOUSE_CARDS = [
+  { id:'el_h', school:'원소', front:'수소(H)의 원자번호는?',
+    choices:['1','2','8','26'], answer:0,
+    lore:'가장 가벼운 원소.',
+    fact:'수소는 양성자 1개. 원자번호=양성자 수이므로 1. 우주에서 가장 흔한 원소다.' },
+  { id:'el_au', school:'원소', front:'금의 원소 기호는?',
+    choices:['Go','Gd','Au','Ag'], answer:2,
+    lore:'녹슬지 않는 금속의 이름.',
+    fact:'Au는 라틴어 aurum. Ag는 은(argentum). Gd는 가돌리늄.' },
+  { id:'el_air', school:'원소', front:'건조 공기의 약 21%를 차지하는 기체는?',
+    choices:['질소','산소','이산화탄소','아르곤'], answer:1,
+    lore:'호흡의 원소.',
+    fact:'건조 공기 ≈ 질소 78% · 산소 21% · 아르곤 0.93% · CO₂ 약 0.04%.' },
+  { id:'el_nacl', school:'원소', front:'식용 소금의 화학식은?',
+    choices:['NaCl','KCl','CaCO₃','H₂SO₄'], answer:0,
+    lore:'두 원소의 이온 결합.',
+    fact:'소금은 나트륨(Na⁺)과 염소(Cl⁻)의 이온결정 NaCl. KCl은 염화칼륨.' },
+  { id:'el_c', school:'원소', front:'다이아몬드와 흑연의 공통 원소는?',
+    choices:['규소','탄소','철','붕소'], answer:1,
+    lore:'같은 원소, 다른 결합.',
+    fact:'둘 다 탄소(C)의 동소체. 정사면체 결합=다이아몬드, 층상=흑연.' },
+  { id:'rn_n', school:'룬', front:'엘더 푸타르크(Elder Futhark) 룬 글자 수는?',
+    choices:['16','24','26','33'], answer:1,
+    lore:'가장 오래된 룬 알파벳.',
+    fact:'엘더 푸타르크는 24자. 후기 영 퓨토르크는 26~33, 젊은 푸타르크는 16자.' },
+  { id:'rn_fehu', school:'룬', front:'룬 ᚠ (Fehu)가 앵글로색슨 룬시에서 가리키는 것은?',
+    choices:['불','가축·재산','전쟁','달'], answer:1,
+    lore:'룬시에 적힌 뜻 — 점술 아님.',
+    fact:'앵글로색슨 룬시: Feoh = cattle/wealth. 목축 재산이 부의 단위였던 기록.' },
+  { id:'rn_uruz', school:'룬', front:'룬 ᚢ (Uruz)의 룬시 뜻은?',
+    choices:['물','오로크스(들소)','태양','배'], answer:1,
+    lore:'멸종한 들소의 이름.',
+    fact:'Ur는 유럽 들소 오로크스(aurochs). 힘·야생의 상징으로 룬시에 등장한다.' },
+  { id:'rn_name', school:'룬', front:'Futhark라는 이름의 유래는?',
+    choices:['신 이름','처음 여섯 글자(F-U-Þ-A-R-K)','지역명','숫자 24'], answer:1,
+    lore:'알파벳처럼 앞글자를 딴 이름.',
+    fact:'ᚠᚢᚦᚨᚱᚲ = F-U-Þ-A-R-K. 그리스 alphabet(알파+베타)과 같은 명명법.' },
+  { id:'rn_poem', school:'룬', front:'룬의 뜻을 글로 남긴 중세 문헌의 통칭은?',
+    choices:['사가','룬시(Rune Poems)','에다 산문만','금석문만'], answer:1,
+    lore:'앵글로색슨·노르웨이·아이슬란드 룬시.',
+    fact:'Rune Poems는 각 룬 글자에 짧은 시를 붙인 중세 기록. 현대 점술 책과 별개다.' },
+  { id:'lt_bene', school:'라틴어근', front:'라틴 bene의 뜻은?',
+    choices:['나쁘게','잘·좋게','말하다','쓰다'], answer:1,
+    lore:'benefit, benevolent의 뿌리.',
+    fact:'bene = well. benefit=잘 됨, benevolent=잘 바라는, benediction=좋은 말(축복).' },
+  { id:'lt_mal', school:'라틴어근', front:'라틴 mal-의 뜻은?',
+    choices:['크다','나쁘다','빠르다','적다'], answer:1,
+    lore:'malice, malfunction의 뿌리.',
+    fact:'malus = bad. malice=악의, malfunction=잘못 작동, malnutrition=영양불량.' },
+  { id:'lt_scrib', school:'라틴어근', front:'라틴 scribere의 뜻은?',
+    choices:['보다','쓰다','나르다','말하다'], answer:1,
+    lore:'describe, script의 뿌리.',
+    fact:'scribere = to write. describe=써 내려 묘사, manuscript=손으로 쓴 것, scripture=성서(기록).' },
+  { id:'lt_port', school:'라틴어근', front:'라틴 portare의 뜻은?',
+    choices:['나르다','보다','자르다','듣다'], answer:0,
+    lore:'transport, portable의 뿌리.',
+    fact:'portare = to carry. transport=건너 나르다, export=밖으로 나르다, portable=나를 수 있는.' },
+  { id:'lt_spect', school:'라틴어근', front:'라틴 spectare의 뜻은?',
+    choices:['듣다','보다','먹다','달리다'], answer:1,
+    lore:'inspect, spectator의 뿌리.',
+    fact:'spectare/specere = to look. inspect=안으로 보다, spectator=보는 사람, perspective=통해 보다.' },
+  { id:'lt_dict', school:'라틴어근', front:'라틴 dicere의 뜻은?',
+    choices:['말하다','쓰다','보다','믿다'], answer:0,
+    lore:'dictionary, predict의 뿌리.',
+    fact:'dicere = to say. dictionary=말의 책, predict=미리 말하다, contradict=반대로 말하다.' },
+  { id:'st_sirius', school:'별자리', front:'밤하늘에서 가장 밝게 보이는 항성은?',
+    choices:['폴라리스','시리우스','베텔게우스','베가'], answer:1,
+    lore:'큰개자리(Canis Major)의 알파성.',
+    fact:'시리우스(α CMa)는 겉보기등급 −1.46으로 태양을 제외한 밤하늘 최광성. 폴라리스는 북극성이지 최광이 아니다.' },
+  { id:'st_polaris', school:'별자리', front:'북극성(폴라리스)이 속한 별자리는?',
+    choices:['큰곰자리','작은곰자리','카시오페이아','오리온'], answer:1,
+    lore:'자전축이 가리키는 별.',
+    fact:'폴라리스는 작은곰자리(Ursa Minor)에 있다. 현재 천구의 북극 근처에 있어 북쪽으로 쓴다.' },
+  { id:'st_orion', school:'별자리', front:'오리온 자리에서 더 밝은 1등성은?',
+    choices:['베텔게우스','리겔','세 허리띠 별','벨라트릭스'], answer:1,
+    lore:'어깨 vs 발.',
+    fact:'리겔(β Ori) 겉보기등급 약 0.1, 베텔게우스(α Ori)는 보통 0.4~1.3으로 더 어둡다. α가 항상 더 밝지는 않다.' },
+  { id:'st_dipper', school:'별자리', front:'북두칠성(Big Dipper)의 정확한 분류는?',
+    choices:['독립 별자리','큰곰자리 안의 성군(asterism)','은하수 별명','행성'], answer:1,
+    lore:'국자 모양 일곱 별.',
+    fact:'북두칠성은 IAU 별자리가 아니라 큰곰자리(Ursa Major) 안의 성군(asterism)이다.' },
+  { id:'st_zodiac', school:'별자리', front:'황도대(zodiac) 별자리가 늘어선 기준면은?',
+    choices:['은하 평면','황도(지구 공전 궤도 면)','적도','월면'], answer:1,
+    lore:'태양이 지나가는 띠 — 점성 운세 아님.',
+    fact:'황도는 지구 공전 궤도 면. 전통 12궁 + 태양이 실제로 지나는 뱀주인자리(Ophiuchus)가 있다.' },
+  { id:'en_abandon', school:'영단어', front:'abandon의 뜻은?',
+    choices:['성취하다','버리다','고려하다','허용하다'], answer:1,
+    lore:'고교 필수 동사.',
+    fact:'abandon = 버리다·포기하다. They abandoned the ship. 명사 abandonment.' },
+  { id:'en_achieve', school:'영단어', front:'achieve의 뜻은?',
+    choices:['피하다','성취하다','비교하다','반대하다'], answer:1,
+    lore:'goal과 자주 짝.',
+    fact:'achieve = 성취하다. achieve a goal. 명사 achievement.' },
+  { id:'en_consider', school:'영단어', front:'consider의 뜻은?',
+    choices:['고려하다','취소하다','계속하다','구성하다'], answer:0,
+    lore:'consider A (as) B.',
+    fact:'consider = 고려하다·여기다. Consider the risk. 형용사 considerate=사려 깊은(별뜻).' },
+  { id:'en_despite', school:'영단어', front:'despite의 품사·뜻은?',
+    choices:['접속사 · 그러나','전치사 · ~에도 불구하고','부사 · 매우','동사 · 싫어하다'], answer:1,
+    lore:'in spite of와 동의.',
+    fact:'despite는 전치사. despite the rain = 비에도 불구하고. 뒤에 절이 오면 despite the fact that.' },
+  { id:'en_however', school:'영단어', front:'however의 기본 뜻은?',
+    choices:['그러므로','그러나','예를 들어','왜냐하면'], answer:1,
+    lore:'문장 접속 부사.',
+    fact:'however = 그러나·아무리 -해도. It rained; however, we went. 접속사 although와 자리/구두점이 다르다.' },
+  { id:'en_sig', school:'영단어', front:'significant의 뜻은?',
+    choices:['사소한','중요한·의미 있는','유사한','별도의'], answer:1,
+    lore:'수능·내신 빈도 높음.',
+    fact:'significant = 중요한·통계적으로 의미 있는. 명사 significance. 반의어 insignificant.' }
+];
+function allCards() { return ARCANA.concat(HOUSE_CARDS); }
+
 // 간격반복 상태: cardId -> {S(안정성), D(난이도), interval, reps, due, lapses, mastered, last, state}
 function getArcanaProgress() {
   try { return JSON.parse(localStorage.getItem('p5-arcana-srs') || '{}'); }
@@ -274,7 +395,7 @@ function getDueCards() {
   const t = todayNum();
   const due = [];
   const fresh = [];
-  ARCANA.forEach(c => {
+  allCards().forEach(c => {
     const p = prog[c.id];
     if (!p) fresh.push(c);
     else if ((p.due ?? 0) <= t) due.push({ card: c, prog: p });
@@ -286,13 +407,13 @@ function getDueCards() {
 function getMasteryStats() {
   const prog = getArcanaProgress();
   let mastered = 0, learning = 0;
-  ARCANA.forEach(c => {
+  allCards().forEach(c => {
     const p = prog[c.id];
     if (!p) return;
     if (p.mastered) mastered++;
     else if ((p.reps ?? 0) > 0) learning++;
   });
-  return { mastered, learning, total: ARCANA.length };
+  return { mastered, learning, total: allCards().length };
 }
 
 // 카드 숙련 레벨 → 문제 포맷 결정 (testing-effect 에스컬레이션, Quizlet Learn 방식)
@@ -328,7 +449,7 @@ function resolveMistake(cardId, correct) {
 }
 function getMistakeCards() {
   const m = getMistakes();
-  return ARCANA.filter(c => m[c.id]);
+  return allCards().filter(c => m[c.id]);
 }
 
 // =====================================================================
@@ -1282,7 +1403,7 @@ const UNIT_META = {
   '신화':   { name: '신화 서고',   icon: '✶', blurb: '정령의 기원 — 오래된 이야기' },
   '물질':   { name: '물질 연성실', icon: '⬡', blurb: '물질의 진실 — 원소와 결정' }
 };
-function getUnitCards(school) { return ARCANA.filter(c => c.school === school); }
+function getUnitCards(school) { return allCards().filter(c => c.school === school); }
 function getUnitStats(school) {
   const prog = getArcanaProgress();
   const cards = getUnitCards(school);
@@ -1576,6 +1697,20 @@ function grimNextReviewText(p) {
   return `${days}일 후 복습 예정`;
 }
 
+function renderHouseDecks() {
+  const el = document.getElementById('house-decks');
+  if (!el) return;
+  const prog = getArcanaProgress();
+  el.innerHTML = '<div class="hd-head">하우스 기성 덱 <span>로컬 JSON · 서버 없음</span></div>' +
+    '<div class="hd-grid">' + HOUSE_BUNDLES.map(b => {
+      const cards = getUnitCards(b.school);
+      const seen = cards.filter(c => prog[c.id] && (prog[c.id].reps || 0) > 0).length;
+      return `<button class="hd-card" type="button" onclick="startArcanaLesson('${b.school}')">` +
+        `<b>${b.name}</b><span class="hd-blurb">${b.blurb}</span>` +
+        `<span class="hd-meta">${cards.length}장 · 펼침 ${seen}</span></button>`;
+    }).join('') + '</div>';
+}
+
 function renderGrimoire() {
   const summary = document.getElementById('grimoire-summary');
   const filters = document.getElementById('grimoire-filters');
@@ -1616,7 +1751,7 @@ function renderGrimoire() {
     if (p && (p.reps ?? 0) > 0) return 1;
     return 2;
   };
-  const ordered = [...ARCANA].sort((a, b) => rank(a) - rank(b));
+  const ordered = [...allCards()].sort((a, b) => rank(a) - rank(b));
 
   listEl.innerHTML = '';
   let shown = 0;
@@ -1748,6 +1883,7 @@ function updateUI() {
   renderAcademyPath();
 
   // 아르카나 지식서 (Grimoire) — 배운 지식 서고 + 복습 예보
+  renderHouseDecks();
   renderGrimoire();
   renderReviewForecast();
 
@@ -2015,6 +2151,17 @@ function init() {
 
   // Ensure streak render live
   renderStreakFomoP5();
+
+  // GOLD50 TOP1: Quizlet/Duolingo — open on due card, not the dashboard
+  try {
+    if (!sessionStorage.getItem('p5_due_boot')) {
+      sessionStorage.setItem('p5_due_boot', '1');
+      const d = getDueCards();
+      if ((d.due && d.due.length) || (d.fresh && d.fresh.length)) {
+        setTimeout(function () { startArcanaLesson(); }, 80);
+      }
+    }
+  } catch (e) {}
 
   // Post-boot Legion imprint
   console.log('%c[p5 Legion UPGRADE] casting(timing/memory/echo/reaction/accumulation) • FAMILIAR_BONUS_MAP live • streak FOMO • ALWAYS LEARNING forced • p3 funnel • fictional shield • full persist', 'color:#a78bfa');
