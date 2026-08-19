@@ -174,11 +174,11 @@ function renderStreakWeek() {
   const dEl = document.getElementById('streakDeltaChip');
   if (dEl) {
     const d = getP5TodayLessons() - getP5YestLessons();
-    dEl.textContent = 'Δ' + (d > 0 ? '+' : '') + d;
+    dEl.textContent = 'Δ' + Math.abs(d);
     dEl.classList.toggle('up', d > 0);
     dEl.classList.toggle('down', d < 0);
     dEl.classList.toggle('zero', d === 0);
-    dEl.setAttribute('title', '오늘 수업 − 어제 수업 · 이 기기만 · 오답 아님');
+    dEl.setAttribute('title', '오늘 수업 − 어제 수업 · 절댓값 · 부호는 색 · 이 기기만 · 오답 아님');
   }
   if (tapEl) {
     if (p5WeekTap) {
