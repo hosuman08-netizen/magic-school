@@ -94,7 +94,23 @@ header h1 {
   letter-spacing: .4px;
   text-transform: uppercase;
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
+.due-n-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #1c1630;
+  background: #c4b5fd;
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.due-n-badge.done { background: #334155; color: #cbd5e1; }
 
 .lesson-card, .lesson-btn {
   display: flex;

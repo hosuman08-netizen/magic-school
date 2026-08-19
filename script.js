@@ -2070,20 +2070,26 @@ function updateUI() {
     past.innerHTML += `<div style="font-size:0.75em;opacity:.65;margin-top:4px">총 ${state.insights.length}개 기록 • 끝없이 배우는 중</div>`;
   }
 
-  // 오늘의 복습 — 진짜 due 카드 수 반영 (SM-2 간격반복)
+  // GOLD50 TOP5: due N 뱃지 + 히어로 카피 "오늘 잊기 직전 N"
   const arcanaSub = document.getElementById('arcana-hero-sub');
-  if (arcanaSub) {
-    const { due, fresh, freshTotal } = getDueCards();
+  const dueBadge = document.getElementById('dueHeroBadge');
+  {
+    const { due, fresh } = getDueCards();
     const stats = getMasteryStats();
     const reviewN = due.length;
     const newN = fresh.length;
-    if (reviewN === 0 && newN === 0) {
-      arcanaSub.textContent = `오늘 복습 완료 · 정착 ${stats.mastered}/${stats.total}장`;
-    } else {
-      const parts = [];
-      if (reviewN) parts.push(`복습 ${reviewN}장`);
-      if (newN) parts.push(`새 지식 ${newN}장`);
-      arcanaSub.textContent = `${parts.join(' · ')} 대기 · 정착 ${stats.mastered}/${stats.total}`;
+    if (dueBadge) {
+      dueBadge.textContent = reviewN > 0 ? `due ${reviewN}장` : '오늘 완료';
+      dueBadge.classList.toggle('done', reviewN === 0);
+    }
+    if (arcanaSub) {
+      if (reviewN === 0 && newN === 0) {
+        arcanaSub.textContent = `오늘 잊기 직전 0장 · 정착 ${stats.mastered}/${stats.total}`;
+      } else {
+        const parts = [`오늘 잊기 직전 ${reviewN}장`];
+        if (newN) parts.push(`새 지식 ${newN}장`);
+        arcanaSub.textContent = `${parts.join(' · ')} · 정착 ${stats.mastered}/${stats.total}`;
+      }
     }
   }
 
