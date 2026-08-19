@@ -96,6 +96,7 @@ header h1 {
 .streak-week .sw-dot.sel { outline: 1px solid #c4b5fd; outline-offset: 2px; }
 #streakWeekN { display: block; font-size: 0.62rem; color: #c4b5fd; margin-top: 4px; }
 #streakWeekLessons { display: block; font-size: 0.62rem; color: #9a92b8; margin-top: 2px; }
+#streakYestLessons { display: block; font-size: 0.62rem; color: #9a92b8; margin-top: 2px; }
 #streakDayTap { display: block; font-size: 0.62rem; color: #9a92b8; margin-top: 2px; min-height: 0.8em; }
 
 /* ── Today: the hero block ── */
