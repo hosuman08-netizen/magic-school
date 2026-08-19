@@ -171,6 +171,12 @@ function renderStreakWeek() {
   if (sumEl) sumEl.textContent = '이번 주 수업 ' + getP5WeekLessons() + '회';
   if (yestEl) yestEl.textContent = '어제 수업 ' + getP5YestLessons() + '회';
   if (vsEl) vsEl.textContent = '오늘 ' + getP5TodayLessons() + ' · 어제 ' + getP5YestLessons();
+  const dEl = document.getElementById('streakDeltaChip');
+  if (dEl) {
+    const d = getP5TodayLessons() - getP5YestLessons();
+    dEl.textContent = 'Δ' + (d > 0 ? '+' : '') + d;
+    dEl.setAttribute('title', '오늘 수업 − 어제 수업 · 이 기기만 · 오답 아님');
+  }
   if (tapEl) {
     if (p5WeekTap) {
       const on = !!days[p5WeekTap];

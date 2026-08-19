@@ -84,6 +84,7 @@ header h1 {
   color: #9a7b2e;
   margin-top: 2px;
 }
+.chip-delta{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;border:1px solid #3a2f22;font-size:0.68rem;color:#c5a46e}
 #streakShieldCopy { color: #c4b5fd; }
 .streak-week { display: flex; gap: 4px; margin-top: 6px; justify-content: center; }
 .streak-week .sw-dot {
