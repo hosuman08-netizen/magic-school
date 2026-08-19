@@ -176,7 +176,10 @@ function jumpP5TodayVsYest() {
   vs.classList.add('vs-jump');
   try { vs.focus(); } catch (eF) {}
   try { clearTimeout(vs._jumpT); } catch (e2) {}
-  vs._jumpT = setTimeout(function () { try { clearP5VsJump(vs); } catch (e3) {} }, 800);
+  vs._jumpT = setTimeout(function () {
+    try { clearP5VsJump(vs); } catch (e3) {}
+    try { if (vs && vs.focus) vs.focus(); } catch (eF2) {}
+  }, 800);
 }
 function renderStreakWeek() {
   const el = document.getElementById('streakWeek');
@@ -203,7 +206,7 @@ function renderStreakWeek() {
     vsEl.textContent = '오늘 ' + getP5TodayLessons() + ' · 어제 ' + getP5YestLessons();
     vsEl.setAttribute('role', 'button');
     vsEl.setAttribute('tabindex', '0');
-    vsEl.setAttribute('title', '잔광 끄면 vs줄 포커스유지 · Enter/Space/Esc=끄기 · 이 기기만 · 오답 아님');
+    vsEl.setAttribute('title', '잔광 타임아웃 뒤 vs줄 포커스유지 · Enter/Space/Esc=끄기 · 이 기기만 · 오답 아님');
     vsEl.onclick = function () { killP5VsJump(vsEl); };
     vsEl.onkeydown = function (ev) {
       if (ev.key === 'Enter' || ev.key === ' ' || ev.code === 'Space'
