@@ -161,6 +161,7 @@ function killP5VsJump(vs) {
   try { clearTimeout(vs._jumpT); } catch (e0) {}
   vs._jumpT = 0;
   clearP5VsJump(vs);
+  try { if (vs.focus) vs.focus(); } catch (eF) {}
   return true;
 }
 function jumpP5TodayVsYest() {
@@ -202,7 +203,7 @@ function renderStreakWeek() {
     vsEl.textContent = '오늘 ' + getP5TodayLessons() + ' · 어제 ' + getP5YestLessons();
     vsEl.setAttribute('role', 'button');
     vsEl.setAttribute('tabindex', '0');
-    vsEl.setAttribute('title', '잔광 중 Enter/Space/Esc=끄기 · 이 기기만 · 오답 아님');
+    vsEl.setAttribute('title', '잔광 끄면 vs줄 포커스유지 · Enter/Space/Esc=끄기 · 이 기기만 · 오답 아님');
     vsEl.onclick = function () { killP5VsJump(vsEl); };
     vsEl.onkeydown = function (ev) {
       if (ev.key === 'Enter' || ev.key === ' ' || ev.code === 'Space'
