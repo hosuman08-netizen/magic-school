@@ -149,15 +149,24 @@ function tapP5WeekDay(k) {
   p5WeekTap = p5WeekTap === k ? null : k;
   renderStreakWeek();
 }
+function clearP5VsJump(vs) {
+  if (!vs) return;
+  vs.classList.remove('vs-jump');
+  vs.style.outline = 'none';
+  vs.style.boxShadow = 'none';
+  vs.style.color = '';
+}
 function jumpP5TodayVsYest() {
   const vs = document.getElementById('streakTodayVsYest');
   if (!vs) return;
   try { vs.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
-  vs.classList.remove('vs-jump');
+  clearP5VsJump(vs);
+  vs.style.outline = '';
+  vs.style.boxShadow = '';
   void vs.offsetWidth;
   vs.classList.add('vs-jump');
   try { clearTimeout(vs._jumpT); } catch (e2) {}
-  vs._jumpT = setTimeout(function () { try { vs.classList.remove('vs-jump'); } catch (e3) {} }, 800);
+  vs._jumpT = setTimeout(function () { try { clearP5VsJump(vs); } catch (e3) {} }, 800);
 }
 function renderStreakWeek() {
   const el = document.getElementById('streakWeek');
