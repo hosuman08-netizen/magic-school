@@ -30,6 +30,12 @@ header h1 {
   color: #888;
 }
 
+button:not(.sw-dot) {
+  min-height: 44px;
+  box-sizing: border-box;
+  transition: transform var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), opacity var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+}
+
 .nav { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px; }
 .nav button, .more-nav summary {
   background: #1f1a33;
@@ -37,15 +43,16 @@ header h1 {
   border: 1px solid #4c3f72;
   padding: 8px 14px;
   margin: 0;
-  border-radius: 10px;
+  min-height: 44px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: transform var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+  transition: transform var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
 }
 .nav button:active, .more-nav summary:active { transform: scale(.98); }
 .more-nav { position:relative; }
-.more-nav summary { list-style:none; }
+.more-nav summary { list-style:none; display:inline-flex; align-items:center; }
 .more-nav[open] summary { border-color: var(--accent); }
-.more-nav[open] { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.more-nav[open] { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
 
 .nav button:hover {
   background: #2a2544;
@@ -56,8 +63,56 @@ header h1 {
 }
 header.play .subtitle { display: none; }
 header.play .more-nav { display: none; }
+header.play ~ footer { display: none; }
+header.play ~ #lessons { margin-top: 8px; }
+
+/* 수업 중: 목록·숫자 치우고 카드 하나만 */
+#lessons.in-cast > h2,
+#lessons.in-cast .lesson-list { display: none; }
+#lessons.in-cast #casting-area { display: block; margin-top: 8px; }
+#lessons.in-cast .cast-hint { display: none; }
 
 .hidden { display: none; }
+
+.today-card-skel {
+  padding: 24px 16px;
+  min-height: 88px;
+  border: 1px solid #322b4d;
+  border-radius: 8px;
+  color: #948cb4;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.cast-leave {
+  width: 100%;
+  margin-top: 16px;
+  min-height: 44px;
+  background: transparent;
+  color: #7a729a;
+  border: 1px solid #322b4d;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-family: inherit;
+}
+.cast-leave:hover { border-color: #6b5ca0; color: #c4b5fd; }
+.cast-leave:active { transform: scale(.98); }
+
+.cast-done {
+  width: 100%;
+  margin-top: 8px;
+  min-height: 44px;
+  background: #4c3f72;
+  color: #e2d9ff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+.cast-done:hover { background: #5b4d86; }
+.cast-done:active { transform: scale(.98); }
 
 /* ── Stats: quiet secondary row (values are neutral, not gold) ── */
 .stats {
@@ -198,13 +253,14 @@ header.play .more-nav { display: none; }
 .cast-button {
   width: 100%;
   padding: 18px 14px;
+  min-height: 44px;
   font-size: 1.02rem;
   background: #4c3f72;
   color: #e2d9ff;
   border: none;
   border-radius: 8px;
   margin: 8px 0 4px;
-  transition: all .08s ease;
+  transition: transform var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
 }
 
 .cast-button:active {
@@ -310,7 +366,8 @@ textarea {
   color: #e2d9ff;
   border: none;
   padding: 8px 14px;
-  border-radius: 6px;
+  min-height: 44px;
+  border-radius: 8px;
   font-size: 0.92em;
   cursor: pointer;
 }
@@ -337,16 +394,11 @@ footer {
 #dashboard-familiar, #current-familiar {
   border: 1px solid #3a3454;
 }
-/* 순환 배선: 허브 백링크 (작은 푸터 링크, 주인공 안 뺏김) */
-.more-apps { margin-top: 10px; text-align: center; }
-.more-apps a {
-  font-size: 0.75em;
-  color: #a78bfa;
-  opacity: 0.55;
-  text-decoration: none;
-  transition: opacity 0.2s;
+#cast-game button,
+.arcana-choice {
+  min-height: 44px;
+  border-radius: 8px;
 }
-.more-apps a:hover { opacity: 0.9; }
 
 /* ── 아르카나 지식서 (Grimoire): 배운 지식이 쌓이는 서고 ── */
 .grimoire-summary {
@@ -384,12 +436,13 @@ footer {
   background: #1f1a33;
   color: #948cb4;
   border: 1px solid #322b4d;
-  padding: 5px 11px;
-  border-radius: 14px;
+  padding: 8px 12px;
+  min-height: 44px;
+  border-radius: 8px;
   font-size: 0.76rem;
   cursor: pointer;
   font-family: inherit;
-  transition: color .12s, border-color .12s, background .12s;
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
 }
 .grimoire-filters button:hover { border-color: #6b5ca0; }
 .grimoire-filters button.active {

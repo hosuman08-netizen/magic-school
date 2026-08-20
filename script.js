@@ -838,7 +838,7 @@ let arcanaSession = null;
 // 지식 수업 시작 — 오늘 복습 대상 + 새 카드로 큐 구성.
 // schoolFilter 지정 시 그 학과(유닛)의 카드만 = 학원의 길 유닛 진행.
 function startArcanaLesson(schoolFilter) {
-  showTab('lessons');
+  enterCast({ spell: false });
   const area = document.getElementById('casting-area');
   const title = document.getElementById('lesson-title');
   const game = document.getElementById('cast-game');
@@ -879,7 +879,7 @@ window.startArcanaLesson = startArcanaLesson;
 
 // 오답 노트 세션 — 틀린 카드만 모아 별도 복습 (due 무관, 약점 정복 전용)
 function startMistakesLesson() {
-  showTab('lessons');
+  enterCast({ spell: false });
   const area = document.getElementById('casting-area');
   const title = document.getElementById('lesson-title');
   const game = document.getElementById('cast-game');
@@ -931,7 +931,7 @@ function renderArcanaCard() {
     const order = card.choices.map((_, i) => i);
     for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
     order.forEach(origIdx => {
-      html += `<button class="arcana-choice" data-idx="${origIdx}" style="text-align:left;padding:11px 13px;background:#1f1a33;border:1px solid #4c3f72;border-radius:8px;color:#e5e0f0;cursor:pointer;font-size:.98em">${escHtml(card.choices[origIdx])}</button>`;
+      html += `<button class="arcana-choice" data-idx="${origIdx}" style="text-align:left;padding:11px 13px;min-height:44px;background:#1f1a33;border:1px solid #4c3f72;border-radius:8px;color:#e5e0f0;cursor:pointer;font-size:.98em;transition:transform 160ms cubic-bezier(.2,.8,.2,1),background 160ms cubic-bezier(.2,.8,.2,1),border-color 160ms cubic-bezier(.2,.8,.2,1)">${escHtml(card.choices[origIdx])}</button>`;
     });
     html += `</div>`;
     game.innerHTML = html;
@@ -974,12 +974,12 @@ function showGradeButtons(card) {
   const prev = (getArcanaProgress()[card.id] || {});
   const grade = document.createElement('div');
   grade.id = 'arcana-grade';
-  grade.style.cssText = 'display:flex;gap:6px;margin-top:12px;flex-wrap:wrap';
+  grade.style.cssText = 'display:flex;gap:8px;margin-top:12px;flex-wrap:wrap';
   const ivLabel = (days) => (days < 1 ? '오늘' : days + '일');
   const mk = (label, rating, col) => {
     const pred = scheduleCard(prev, rating);
     const b = document.createElement('button');
-    b.style.cssText = `flex:1 1 22%;min-width:64px;padding:10px 4px;border:1px solid ${col};background:transparent;color:${col};border-radius:8px;cursor:pointer;font-size:.84em;line-height:1.25`;
+    b.style.cssText = `flex:1 1 22%;min-width:64px;min-height:44px;padding:8px 4px;border:1px solid ${col};background:transparent;color:${col};border-radius:8px;cursor:pointer;font-size:.84em;line-height:1.25;transition:transform 160ms cubic-bezier(.2,.8,.2,1),background 160ms cubic-bezier(.2,.8,.2,1)`;
     b.innerHTML = `<div>${label}</div><div style="font-size:.68em;opacity:.7">${ivLabel(pred.interval)}</div>`;
     b.onclick = () => {
       grade.remove();
@@ -1732,13 +1732,13 @@ function renderAcademyPath() {
 // =====================================================================
 let matchSession = null;
 function startMatchingLesson(schoolFilter) {
-  showTab('lessons');
+  enterCast({ spell: false });
   const area = document.getElementById('casting-area');
   const title = document.getElementById('lesson-title');
   const game = document.getElementById('cast-game');
   const sfumato = document.getElementById('cast-sfumato');
   if (sfumato) sfumato.style.display = 'none';
-  area.classList.remove('hidden');
+  if (area) area.classList.remove('hidden');
 
   const prog = getArcanaProgress();
   const t = todayNum();
@@ -2247,7 +2247,7 @@ function updateUI() {
     const reviewN = due.length;
     const newN = fresh.length;
     if (dueBadge) {
-      dueBadge.textContent = reviewN > 0 ? `due ${reviewN}장` : '오늘 완료';
+      dueBadge.textContent = reviewN > 0 ? `오늘 ${reviewN}장` : '오늘 완료';
       dueBadge.classList.toggle('done', reviewN === 0);
     }
     if (arcanaSub) {
@@ -2271,7 +2271,7 @@ function updateUI() {
       dashFam.onclick = () => showTab('familiars');
       dashFam.style.cursor = 'pointer';
     } else {
-      dashFam.innerHTML = '소환된 정령이 없습니다. "소환" 탭에서 정령을 선택하세요.';
+      dashFam.innerHTML = '소환된 정령이 없습니다. 정령 탭에서 선택하세요.';
       dashFam.onclick = () => showTab('familiars');
       dashFam.style.cursor = 'pointer';
     }
@@ -2323,21 +2323,50 @@ function unsummon() {
   updateFamiliars();
 }
 
-function showTab(tab) {
+let currentLesson = null;
+
+function enterCast(opts) {
+  const spell = !!(opts && opts.spell);
+  const lessons = document.getElementById('lessons');
+  if (lessons) lessons.classList.add('in-cast');
+  showTab('lessons', { cast: true });
+  const area = document.getElementById('casting-area');
+  if (area) area.classList.remove('hidden');
+  const done = document.getElementById('cast-done');
+  const hint = document.getElementById('cast-hint');
+  if (done) done.classList.toggle('hidden', !spell);
+  if (hint) hint.classList.toggle('hidden', !spell);
+}
+function leaveCast() {
+  arcanaSession = null;
+  matchSession = null;
+  currentLesson = null;
+  const lessons = document.getElementById('lessons');
+  if (lessons) lessons.classList.remove('in-cast');
+  const area = document.getElementById('casting-area');
+  if (area) area.classList.add('hidden');
+  const done = document.getElementById('cast-done');
+  if (done) done.classList.add('hidden');
+  showTab('dashboard');
+}
+window.enterCast = enterCast;
+window.leaveCast = leaveCast;
+
+function showTab(tab, opts) {
   document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
-  document.getElementById(tab).classList.remove('hidden');
+  const el = document.getElementById(tab);
+  if (el) el.classList.remove('hidden');
   var hd = document.querySelector('header');
   if (hd) hd.classList.toggle('play', tab === 'lessons' || tab === 'study');
+  if (tab === 'lessons' && !(opts && opts.cast)) {
+    if (!arcanaSession && !matchSession && !currentLesson && el) el.classList.remove('in-cast');
+  }
   if (tab === 'familiars') updateFamiliars();
 }
 
-let currentLesson = null;
-
 function startLesson(type) {
   currentLesson = type;
-  // Casting UI lives inside the #lessons tab — make sure it's the visible tab,
-  // otherwise dashboard lesson cards would silently do nothing.
-  showTab('lessons');
+  enterCast({ spell: true });
   const area = document.getElementById('casting-area');
   const title = document.getElementById('lesson-title');
   const game = document.getElementById('cast-game');
@@ -2470,14 +2499,10 @@ function init() {
 
   // Ensure streak render live
   renderStreakFomoP5();
+  try { updateUI(); } catch (e) {}
 
-  // GOLD50 TOP1: Quizlet/Duolingo — 진입=오늘 카드. 대시보드 통계 먼저 금지.
-  try {
-    if (!sessionStorage.getItem('p5_due_boot')) {
-      sessionStorage.setItem('p5_due_boot', '1');
-      setTimeout(function () { startArcanaLesson(); }, 80);
-    }
-  } catch (e) {}
+  // 진입=오늘 카드. 대시보드 숫자·목록 먼저 금지.
+  startArcanaLesson();
 
   // Post-boot Legion imprint
   console.log('%c[p5 Legion UPGRADE] casting(timing/memory/echo/reaction/accumulation) • FAMILIAR_BONUS_MAP live • streak FOMO • ALWAYS LEARNING forced • p3 funnel • fictional shield • full persist', 'color:#a78bfa');

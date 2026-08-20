@@ -6,7 +6,7 @@
   <title>아르카눔 마법 학원 — 간격반복 학습 게임</title>
   <meta name="description" content="마법 학원 테마로 공부하는 간격반복 학습 앱. 오늘 잊기 직전의 지식을 되살리고, 정령을 소환하며 배움을 게임으로 만든다. 무료·설치 없음.">
   <link rel="canonical" href="https://hosuman08-netizen.github.io/magic-school/">
-  <link rel="stylesheet" href="style.css?v=20260820v">
+  <link rel="stylesheet" href="style.css?v=20260820w">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#a78bfa">
 
@@ -28,14 +28,14 @@
 </head>
 <body>
   <div class="container">
-    <header>
+    <header class="play">
       <h1>아르카눔 마법 학원</h1>
       <div class="subtitle">배움은 가장 강력한 마법이다 • 끝없이 배운다</div>
       <div class="nav">
         <button type="button" onclick="startArcanaLesson()">오늘 수업</button>
+        <button type="button" onclick="leaveCast()">학원</button>
         <details class="more-nav">
           <summary>더보기</summary>
-          <button type="button" onclick="showTab('dashboard')">학원</button>
           <button type="button" onclick="showTab('lessons')">수업</button>
           <button type="button" onclick="showTab('spellbook')">주문서</button>
           <button type="button" onclick="showTab('familiars')">정령</button>
@@ -47,11 +47,11 @@
       </div>
     </header>
 
-    <!-- Dashboard -->
-    <div id="dashboard" class="tab">
+    <!-- Dashboard (부팅 때 숨김 — 첫 페인트는 오늘 카드) -->
+    <div id="dashboard" class="tab hidden">
       <!-- HERO: today's lesson is the one thing the eye lands on -->
       <div class="today">
-        <div class="today-head">오늘의 수업 <span class="due-n-badge" id="dueHeroBadge">due 0장</span></div>
+        <div class="today-head">오늘의 수업 <span class="due-n-badge" id="dueHeroBadge">오늘 0장</span></div>
         <button class="lesson-card hero-lesson" id="arcana-hero" onclick="startArcanaLesson()">
           <span class="lesson-name">아르카나 지식 복습</span>
           <span class="lesson-sub" id="arcana-hero-sub">오늘 잊기 직전 0장</span>
@@ -121,8 +121,8 @@
       </details>
     </div>
 
-    <!-- Lessons -->
-    <div id="lessons" class="tab hidden">
+    <!-- Lessons — 첫 페인트=오늘 카드. 목록은 in-cast에서 숨김 -->
+    <div id="lessons" class="tab in-cast">
       <h2>수업 선택</h2>
       <div class="lesson-list">
         <button class="lesson-btn" onclick="startArcanaLesson()" style="border-color:#a78bfa;background:#221c3a">📖 아르카나 지식 복습 (진짜 배움 · 간격반복)</button>
@@ -134,13 +134,15 @@
         <button class="lesson-btn" onclick="startLesson('spark')">스파크 점화 (타이밍)</button>
         <button class="lesson-btn" onclick="startLesson('reaction')">반응 주문 ★ (순간 반응)</button>
       </div>
-      <div id="casting-area" class="hidden">
-        <h3 id="lesson-title"></h3>
-        <!-- p6 Sfumato visual in cast (Da Vinci cross DNA) -->
-        <canvas id="cast-sfumato" width="520" height="92" style="display:block;width:100%;height:72px;background:#120f1f;border-radius:6px;margin:8px 0 4px;border:1px solid #3a2f4a"></canvas>
-        <div id="cast-game"></div>
-        <button onclick="finishLesson()">수업 완료</button>
-        <small style="opacity:.6">호흡 집중 + 잔향 시각 실시간 반영</small>
+      <div id="casting-area">
+        <h3 id="lesson-title">오늘 수업</h3>
+        <canvas id="cast-sfumato" width="520" height="92" style="display:none;width:100%;height:72px;background:#120f1f;border-radius:8px;margin:8px 0 4px;border:1px solid #3a2f4a"></canvas>
+        <div id="cast-game">
+          <div class="today-card-skel">오늘 잊기 직전의 지식을 불러오는 중</div>
+        </div>
+        <button type="button" id="cast-leave" class="cast-leave" onclick="leaveCast()">나가기</button>
+        <button type="button" id="cast-done" class="cast-done hidden" onclick="finishLesson()">수업 완료</button>
+        <small id="cast-hint" class="cast-hint hidden">호흡 집중 + 잔향 시각 실시간 반영</small>
       </div>
     </div>
 
@@ -149,7 +151,7 @@
       <h2>나의 주문서</h2>
 
       <div id="house-decks" class="house-decks"></div>
-      <!-- GOLD50 TOP3: 붙여넣기 Q/A + cloze — renderHouseDecks가 채움. 룰 가짜 없음. -->
+      <!-- 붙여넣기 Q/A + cloze — renderHouseDecks가 채움. -->
 
       <!-- 복습 예보: 앞으로 7일간 복습 예정 시각화 (Anki식 forecast · 실제 due 기반) -->
       <div id="review-forecast" class="review-forecast"></div>
@@ -196,15 +198,13 @@
 
     <footer>
       <div class="fictional-shield" style="margin-bottom:8px">
-        <small>FICTIONAL ONLY — 이 앱은 100% 가상의 마법 교육 시뮬레이션입니다. 실제 마법·주문·정령은 존재하지 않습니다. 18+ entertainment only.</small>
+        <small>가상 학원 · 실제 마법 없음 · 18+ 엔터</small>
       </div>
       <div class="footer-motto">배움은 가장 강력한 마법이다</div>
-      <nav class="more-apps">
-      </nav>
     </footer>
   </div>
 
-  <script src="script.js?v=20260820v"></script>
+  <script src="script.js?v=20260820w"></script>
 <script>window.LEGION_APP='magic-school';window.LEGION_ANALYTICS_URL='https://legion-analytics.hoyashi95.workers.dev';</script>
 <script src="legion-beacon.js"></script>
   <script src="lung-surprise-eye.js"></script>
