@@ -2469,14 +2469,11 @@ function init() {
   // Ensure streak render live
   renderStreakFomoP5();
 
-  // GOLD50 TOP1: Quizlet/Duolingo — open on due card, not the dashboard
+  // GOLD50 TOP1: Quizlet/Duolingo — 진입=오늘 카드. 대시보드 통계 먼저 금지.
   try {
     if (!sessionStorage.getItem('p5_due_boot')) {
       sessionStorage.setItem('p5_due_boot', '1');
-      const d = getDueCards();
-      if ((d.due && d.due.length) || (d.fresh && d.fresh.length)) {
-        setTimeout(function () { startArcanaLesson(); }, 80);
-      }
+      setTimeout(function () { startArcanaLesson(); }, 80);
     }
   } catch (e) {}
 
