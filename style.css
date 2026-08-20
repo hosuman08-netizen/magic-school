@@ -54,6 +54,8 @@ header h1 {
 .tab {
   margin-top: 20px;
 }
+header.play .subtitle { display: none; }
+header.play .more-nav { display: none; }
 
 .hidden { display: none; }
 

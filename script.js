@@ -2326,6 +2326,8 @@ function unsummon() {
 function showTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
   document.getElementById(tab).classList.remove('hidden');
+  var hd = document.querySelector('header');
+  if (hd) hd.classList.toggle('play', tab === 'lessons' || tab === 'study');
   if (tab === 'familiars') updateFamiliars();
 }
 
