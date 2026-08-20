@@ -6,7 +6,7 @@
   <title>아르카눔 마법 학원 — 간격반복 학습 게임</title>
   <meta name="description" content="마법 학원 테마로 공부하는 간격반복 학습 앱. 오늘 잊기 직전의 지식을 되살리고, 정령을 소환하며 배움을 게임으로 만든다. 무료·설치 없음.">
   <link rel="canonical" href="https://hosuman08-netizen.github.io/magic-school/">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20260820u">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#a78bfa">
 
@@ -32,11 +32,14 @@
       <h1>아르카눔 마법 학원</h1>
       <div class="subtitle">배움은 가장 강력한 마법이다 • 끝없이 배운다</div>
       <div class="nav">
-        <button onclick="showTab('dashboard')">대시보드</button>
-        <button onclick="showTab('lessons')">수업</button>
-        <button onclick="showTab('spellbook')">주문서</button>
-        <button onclick="showTab('study')">공부 모드</button>
-        <button onclick="showTab('familiars')">정령 소환</button>
+        <button type="button" onclick="startArcanaLesson()">오늘 수업</button>
+        <details class="more-nav">
+          <summary>더보기</summary>
+          <button type="button" onclick="showTab('dashboard')">학원</button>
+          <button type="button" onclick="showTab('lessons')">수업</button>
+          <button type="button" onclick="showTab('spellbook')">주문서</button>
+          <button type="button" onclick="showTab('familiars')">정령</button>
+        </details>
       </div>
       <!-- Prominent fictional shield (top, always visible; honest + not visually shouting) -->
       <div class="fictional-shield">
